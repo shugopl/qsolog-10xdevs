@@ -1,0 +1,22 @@
+.DS_Store
+
+# IDE / editor
+.idea/
+*.iml
+.vscode/
+
+# Java / Maven
+**/target/
+*.class
+
+# Logs
+*.log
+logs/
+
+# Local env/secrets
+.env
+.env.*
+
+# Spring Boot config (keep secrets out of git)
+backend/src/main/resources/application.yaml
+backend/src/main/resources/application-*.yaml

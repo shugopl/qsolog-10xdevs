@@ -1,4 +1,4 @@
-package com.example.qsolog.api.controller;
+package com.pl.shugo.gsolog.api.controller;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

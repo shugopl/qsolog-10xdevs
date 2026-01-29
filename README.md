@@ -41,20 +41,57 @@ Currently under development. Implementation follows incremental steps in `/itera
 
 See `/iteration/*.md` for detailed implementation steps and `CLAUDE.md` for architecture and development guidelines.
 
+### PostgreSQL Database
+
+Start PostgreSQL using Docker Compose:
+
+```bash
+cd docker
+
+# Start PostgreSQL only
+docker-compose up -d
+
+# Start with pgAdmin (optional database management UI)
+docker-compose --profile tools up -d
+
+# Stop services
+docker-compose down
+
+# Remove data volumes (clean slate)
+docker-compose down -v
+```
+
+**Database connection details:**
+- Host: localhost
+- Port: 5432
+- Database: qsolog
+- Username: qsolog
+- Password: qsolog
+
+**pgAdmin (optional, with --profile tools):**
+- URL: http://localhost:5050
+- Email: admin@qsolog.local
+- Password: admin
+
 ### Backend
 
 Prerequisites:
 - Java 21 or later
 - Maven 3.9+
+- PostgreSQL (via docker-compose or local installation)
+- Docker (required for Testcontainers integration tests)
 
 Build and run:
 ```bash
 cd backend
 
-# Run tests
+# Run all tests (requires Docker for Testcontainers)
 mvn test
 
-# Run application (without database, uses in-memory for now)
+# Run tests excluding integration tests (no Docker required)
+mvn test -Dtest='!DatabaseMigrationTest'
+
+# Run application (requires PostgreSQL running)
 mvn spring-boot:run
 
 # Or build and run JAR
@@ -64,15 +101,25 @@ java -jar target/qsolog-backend-0.0.1-SNAPSHOT.jar
 
 The backend will start on `http://localhost:8080`.
 
-Available endpoints:
+**Available endpoints:**
 - **Health check**: `GET http://localhost:8080/actuator/health`
 - **Ping endpoint**: `GET http://localhost:8080/api/v1/ping` (returns `{"status":"ok"}`)
 - **OpenAPI UI**: `http://localhost:8080/swagger-ui.html`
 - **API Docs (JSON)**: `http://localhost:8080/api-docs`
 
-Environment variables (optional):
+**Environment variables:**
 - `SERVER_PORT` - Server port (default: 8080)
-- `DB_URL` - R2DBC PostgreSQL connection URL (not required yet)
-- `DB_USER` - Database username (not required yet)
-- `DB_PASS` - Database password (not required yet)
+- `FLYWAY_ENABLED` - Enable Flyway migrations (default: false, set to "true" for production)
+- `DB_URL` - R2DBC connection URL (default: r2dbc:postgresql://localhost:5432/qsolog)
+- `DB_URL_JDBC` - JDBC connection for Flyway (default: jdbc:postgresql://localhost:5432/qsolog)
+- `DB_USER` - Database username (default: qsolog)
+- `DB_PASS` - Database password (default: qsolog)
 - `JWT_SECRET` - JWT signing secret (not implemented yet)
+- `CORS_ORIGINS` - Allowed CORS origins (default: http://localhost:4200)
+
+**Database schema:**
+- `users` - User accounts with roles (ADMIN/OPERATOR)
+- `qso` - QSO (contact) log entries with ADIF fields
+- `ai_report_history` - AI-generated report history
+
+Flyway migrations are in `src/main/resources/db/migration/`.

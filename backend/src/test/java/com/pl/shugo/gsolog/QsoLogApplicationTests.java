@@ -1,4 +1,4 @@
-package com.example.qsolog;
+package com.pl.shugo.gsolog;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
