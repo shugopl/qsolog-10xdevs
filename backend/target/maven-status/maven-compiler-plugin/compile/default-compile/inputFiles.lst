@@ -1,0 +1,6 @@
+/Users/maciek/10xDevs/radio-app/backend/src/main/java/com/example/qsolog/QsoLogApplication.java
+/Users/maciek/10xDevs/radio-app/backend/src/main/java/com/example/qsolog/api/controller/PingController.java
+/Users/maciek/10xDevs/radio-app/backend/src/main/java/com/example/qsolog/infrastructure/config/CorsConfig.java
+/Users/maciek/10xDevs/radio-app/backend/src/main/java/com/example/qsolog/infrastructure/config/SecurityConfig.java
+/Users/maciek/10xDevs/radio-app/backend/src/main/java/com/example/qsolog/infrastructure/error/ErrorResponse.java
+/Users/maciek/10xDevs/radio-app/backend/src/main/java/com/example/qsolog/infrastructure/error/GlobalErrorHandler.java
