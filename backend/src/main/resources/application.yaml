@@ -37,10 +37,18 @@ cors:
   allow-credentials: true
   max-age: 3600
 
-# JWT Configuration (placeholder for Step 3)
+# JWT Configuration
 jwt:
-  secret: ${JWT_SECRET:CHANGE_THIS_SECRET_IN_PRODUCTION_MIN_256_BITS}
+  secret: ${JWT_SECRET:CHANGE_THIS_SECRET_IN_PRODUCTION_MIN_256_BITS_LONG_KEY_FOR_HS512}
   expiration: 86400000 # 24 hours in milliseconds
+
+# Admin Bootstrap Configuration
+admin:
+  bootstrap:
+    enabled: ${ADMIN_BOOTSTRAP:false}
+    email: ${ADMIN_EMAIL:}
+    username: ${ADMIN_USERNAME:}
+    password: ${ADMIN_PASSWORD:}
 
 # Actuator Configuration
 management:

@@ -1,5 +1,12 @@
 /Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/QsoLogApplication.java
+/Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/api/controller/AuthController.java
 /Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/api/controller/PingController.java
+/Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/api/dto/LoginRequest.java
+/Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/api/dto/LoginResponse.java
+/Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/api/dto/RegisterRequest.java
+/Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/api/dto/UserResponse.java
+/Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/application/service/AuthService.java
+/Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/domain/entity/User.java
 /Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/domain/enums/AdifMode.java
 /Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/domain/enums/AdifSubmode.java
 /Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/domain/enums/Band.java
@@ -7,7 +14,13 @@
 /Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/domain/enums/LotwStatus.java
 /Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/domain/enums/QslStatus.java
 /Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/domain/enums/Role.java
+/Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/domain/repository/UserRepository.java
+/Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/infrastructure/config/AdminBootstrap.java
 /Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/infrastructure/config/CorsConfig.java
 /Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/infrastructure/config/SecurityConfig.java
 /Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/infrastructure/error/ErrorResponse.java
 /Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/infrastructure/error/GlobalErrorHandler.java
+/Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/infrastructure/security/JwtAuthenticationConverter.java
+/Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/infrastructure/security/JwtAuthenticationManager.java
+/Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/infrastructure/security/JwtProperties.java
+/Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/infrastructure/security/JwtUtil.java
