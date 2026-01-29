@@ -134,4 +134,95 @@ public interface QsoRepository extends R2dbcRepository<Qso, UUID> {
             @Param("limit") int limit,
             @Param("offset") long offset
     );
+
+    // Statistics queries
+
+    /**
+     * Get QSO counts by band.
+     * Returns band, count_all, count_confirmed.
+     */
+    @Query("""
+        SELECT
+            band,
+            COUNT(*) as count_all,
+            COUNT(CASE WHEN qsl_status = 'CONFIRMED' OR lotw_status = 'CONFIRMED' OR eqsl_status = 'CONFIRMED'
+                       THEN 1 END) as count_confirmed
+        FROM qso
+        WHERE user_id = :userId
+        AND (:from IS NULL OR qso_date >= :from)
+        AND (:to IS NULL OR qso_date <= :to)
+        GROUP BY band
+        ORDER BY band
+        """)
+    Flux<java.util.Map<String, Object>> getStatsByBand(
+            @Param("userId") UUID userId,
+            @Param("from") LocalDate from,
+            @Param("to") LocalDate to
+    );
+
+    /**
+     * Get QSO counts by mode.
+     * Returns mode, count_all, count_confirmed.
+     */
+    @Query("""
+        SELECT
+            mode,
+            COUNT(*) as count_all,
+            COUNT(CASE WHEN qsl_status = 'CONFIRMED' OR lotw_status = 'CONFIRMED' OR eqsl_status = 'CONFIRMED'
+                       THEN 1 END) as count_confirmed
+        FROM qso
+        WHERE user_id = :userId
+        AND (:from IS NULL OR qso_date >= :from)
+        AND (:to IS NULL OR qso_date <= :to)
+        GROUP BY mode
+        ORDER BY mode
+        """)
+    Flux<java.util.Map<String, Object>> getStatsByMode(
+            @Param("userId") UUID userId,
+            @Param("from") LocalDate from,
+            @Param("to") LocalDate to
+    );
+
+    /**
+     * Get QSO counts by day.
+     * Returns qso_date, count_all, count_confirmed.
+     */
+    @Query("""
+        SELECT
+            qso_date,
+            COUNT(*) as count_all,
+            COUNT(CASE WHEN qsl_status = 'CONFIRMED' OR lotw_status = 'CONFIRMED' OR eqsl_status = 'CONFIRMED'
+                       THEN 1 END) as count_confirmed
+        FROM qso
+        WHERE user_id = :userId
+        AND (:from IS NULL OR qso_date >= :from)
+        AND (:to IS NULL OR qso_date <= :to)
+        GROUP BY qso_date
+        ORDER BY qso_date
+        """)
+    Flux<java.util.Map<String, Object>> getStatsByDay(
+            @Param("userId") UUID userId,
+            @Param("from") LocalDate from,
+            @Param("to") LocalDate to
+    );
+
+    /**
+     * Get total QSO counts.
+     * Returns count_all, count_confirmed.
+     */
+    @Query("""
+        SELECT
+            COUNT(*) as count_all,
+            COUNT(CASE WHEN qsl_status = 'CONFIRMED' OR lotw_status = 'CONFIRMED' OR eqsl_status = 'CONFIRMED'
+                       THEN 1 END) as count_confirmed
+        FROM qso
+        WHERE user_id = :userId
+        AND (:from IS NULL OR qso_date >= :from)
+        AND (:to IS NULL OR qso_date <= :to)
+        """)
+    Mono<java.util.Map<String, Object>> getTotals(
+            @Param("userId") UUID userId,
+            @Param("from") LocalDate from,
+            @Param("to") LocalDate to
+    );
 }
