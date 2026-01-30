@@ -1,4 +1,5 @@
 /Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/QsoLogApplication.java
+/Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/api/controller/AdminController.java
 /Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/api/controller/AiController.java
 /Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/api/controller/AuthController.java
 /Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/api/controller/ExportController.java
@@ -25,6 +26,7 @@
 /Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/api/dto/Totals.java
 /Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/api/dto/UpdateQsoRequest.java
 /Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/api/dto/UserResponse.java
+/Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/application/service/AdminService.java
 /Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/application/service/AiService.java
 /Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/application/service/AuthService.java
 /Users/maciek/10xDevs/radio-app/backend/src/main/java/com/pl/shugo/gsolog/application/service/ExportService.java

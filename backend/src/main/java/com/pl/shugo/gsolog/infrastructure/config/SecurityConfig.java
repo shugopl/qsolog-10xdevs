@@ -2,6 +2,7 @@ package com.pl.shugo.gsolog.infrastructure.config;
 
 import com.pl.shugo.gsolog.infrastructure.security.JwtAuthenticationConverter;
 import com.pl.shugo.gsolog.infrastructure.security.JwtAuthenticationManager;
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
@@ -20,6 +21,9 @@ import org.springframework.security.web.server.authentication.AuthenticationWebF
  * - /api/v1/auth/**
  * - /actuator/**
  * - /swagger-ui.html, /api-docs, /webjars/**
+ *
+ * ADMIN-only access:
+ * - /api/v1/admin/**
  *
  * Authenticated access (JWT required):
  * - /api/v1/qso/**
@@ -54,6 +58,9 @@ public class SecurityConfig {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
+                        // Always allow CORS preflight
+                        .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
                         // Allow anonymous access
                         .pathMatchers("/api/v1/ping").permitAll()
                         .pathMatchers("/api/v1/auth/**").permitAll()
@@ -62,6 +69,9 @@ public class SecurityConfig {
                         .pathMatchers("/api-docs", "/api-docs/**").permitAll()
                         .pathMatchers("/v3/api-docs/**").permitAll()
                         .pathMatchers("/webjars/**").permitAll()
+
+                        // Require ADMIN role for admin endpoints
+                        .pathMatchers("/api/v1/admin/**").hasRole("ADMIN")
 
                         // Require authentication for protected endpoints
                         .pathMatchers("/api/v1/qso/**").authenticated()

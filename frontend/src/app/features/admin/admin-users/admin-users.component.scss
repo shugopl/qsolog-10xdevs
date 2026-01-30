@@ -1,0 +1,47 @@
+.admin-users-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+
+  p {
+    margin-top: 16px;
+    color: rgba(0, 0, 0, 0.54);
+  }
+}
+
+.error-message {
+  padding: 20px;
+  color: #d32f2f;
+  text-align: center;
+}
+
+.users-table {
+  width: 100%;
+  margin-top: 16px;
+}
+
+.role-admin {
+  background-color: #ff9800;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.role-operator {
+  background-color: #2196f3;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}

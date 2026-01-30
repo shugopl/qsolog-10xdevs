@@ -33,7 +33,8 @@ services:
       DB_PASS: qsolog
       JWT_SECRET: CHANGE_THIS_SECRET_IN_PRODUCTION_MIN_256_BITS_LONG_KEY_FOR_HS512
       FLYWAY_ENABLED: "true"
-      CORS_ORIGINS: http://localhost,http://localhost:80
+      # If you run Angular via `ng serve` (default :4200), include it here.
+      CORS_ORIGINS: http://localhost,http://localhost:80,http://localhost:4200,http://127.0.0.1:4200
       # Admin bootstrap (creates admin user on first startup)
       ADMIN_BOOTSTRAP: "true"
       ADMIN_EMAIL: admin@qsolog.local
