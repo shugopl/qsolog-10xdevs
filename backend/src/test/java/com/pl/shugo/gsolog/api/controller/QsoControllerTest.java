@@ -23,6 +23,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.UUID;
 
 /**
  * Integration tests for QSO CRUD operations.
@@ -61,11 +62,17 @@ class QsoControllerTest {
 
     private String user1Token;
     private String user2Token;
+    private String user1Username;
+    private String user2Username;
 
     @BeforeEach
     void setUp() {
         // Register and login user 1
-        RegisterRequest user1 = new RegisterRequest("user1@test.com", "user1", "password123");
+        String suffix = UUID.randomUUID().toString().replace("-", "");
+        user1Username = "user1_" + suffix;
+        user2Username = "user2_" + suffix;
+
+        RegisterRequest user1 = new RegisterRequest("user1+" + suffix + "@test.com", user1Username, "password123");
         webTestClient.post().uri("/api/v1/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(user1)
@@ -74,7 +81,7 @@ class QsoControllerTest {
 
         byte[] tokenBytes1 = webTestClient.post().uri("/api/v1/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(new LoginRequest("user1", "password123"))
+                .bodyValue(new LoginRequest(user1Username, "password123"))
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -85,7 +92,7 @@ class QsoControllerTest {
         user1Token = extractToken(new String(tokenBytes1));
 
         // Register and login user 2
-        RegisterRequest user2 = new RegisterRequest("user2@test.com", "user2", "password123");
+        RegisterRequest user2 = new RegisterRequest("user2+" + suffix + "@test.com", user2Username, "password123");
         webTestClient.post().uri("/api/v1/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(user2)
@@ -94,7 +101,7 @@ class QsoControllerTest {
 
         byte[] tokenBytes2 = webTestClient.post().uri("/api/v1/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(new LoginRequest("user2", "password123"))
+                .bodyValue(new LoginRequest(user2Username, "password123"))
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()

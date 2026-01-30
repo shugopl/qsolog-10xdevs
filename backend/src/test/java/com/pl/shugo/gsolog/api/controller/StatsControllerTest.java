@@ -21,6 +21,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.UUID;
 
 /**
  * Integration tests for statistics endpoint.
@@ -58,11 +59,14 @@ class StatsControllerTest {
     private WebTestClient webTestClient;
 
     private String userToken;
+    private String username;
 
     @BeforeEach
     void setUp() {
         // Register and login user
-        RegisterRequest user = new RegisterRequest("statsuser@test.com", "statsuser", "password123");
+        String suffix = UUID.randomUUID().toString().replace("-", "");
+        username = "statsuser_" + suffix;
+        RegisterRequest user = new RegisterRequest("statsuser+" + suffix + "@test.com", username, "password123");
         webTestClient.post().uri("/api/v1/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(user)
@@ -71,7 +75,7 @@ class StatsControllerTest {
 
         byte[] tokenBytes = webTestClient.post().uri("/api/v1/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(new LoginRequest("statsuser", "password123"))
+                .bodyValue(new LoginRequest(username, "password123"))
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -241,7 +245,9 @@ class StatsControllerTest {
     @Test
     void getStatsSummary_shouldReturnEmptyForUserWithNoQsos() {
         // Register new user
-        RegisterRequest newUser = new RegisterRequest("newuser@test.com", "newuser", "password123");
+        String suffix = UUID.randomUUID().toString().replace("-", "");
+        String newUsername = "newuser_" + suffix;
+        RegisterRequest newUser = new RegisterRequest("newuser+" + suffix + "@test.com", newUsername, "password123");
         webTestClient.post().uri("/api/v1/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(newUser)
@@ -250,7 +256,7 @@ class StatsControllerTest {
 
         byte[] tokenBytes = webTestClient.post().uri("/api/v1/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(new LoginRequest("newuser", "password123"))
+                .bodyValue(new LoginRequest(newUsername, "password123"))
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()

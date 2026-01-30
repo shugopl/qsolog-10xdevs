@@ -21,6 +21,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -63,11 +64,14 @@ class AiControllerTest {
     private WebTestClient webTestClient;
 
     private String userToken;
+    private String username;
 
     @BeforeEach
     void setUp() {
         // Register and login user
-        RegisterRequest user = new RegisterRequest("aiuser@test.com", "aiuser", "password123");
+        String suffix = UUID.randomUUID().toString().replace("-", "");
+        username = "aiuser_" + suffix;
+        RegisterRequest user = new RegisterRequest("aiuser+" + suffix + "@test.com", username, "password123");
         webTestClient.post().uri("/api/v1/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(user)
@@ -76,7 +80,7 @@ class AiControllerTest {
 
         byte[] tokenBytes = webTestClient.post().uri("/api/v1/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(new LoginRequest("aiuser", "password123"))
+                .bodyValue(new LoginRequest(username, "password123"))
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
