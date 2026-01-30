@@ -22,8 +22,8 @@ import org.springframework.security.web.server.authentication.AuthenticationWebF
  * - /api/v1/auth/login
  * - /actuator/**
  * - /swagger-ui.html, /api-docs, /webjars/**
- * - /api/v1/ai/qso-description
  * - /api/v1/lookup/**
+ * - /api/v1/ai/qso-description
  *
  * ADMIN-only access:
  * - /api/v1/admin/**
@@ -32,7 +32,7 @@ import org.springframework.security.web.server.authentication.AuthenticationWebF
  * - /api/v1/qso/**
  * - /api/v1/stats/**
  * - /api/v1/export/**
- * - /api/v1/ai/**
+ * - /api/v1/ai/** (except qso-description)
  */
 @Configuration
 @EnableWebFluxSecurity
@@ -59,9 +59,6 @@ public class SecurityConfig {
 
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
-                .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
-                .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
-                .anonymous(ServerHttpSecurity.AnonymousSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
                         // Always allow CORS preflight
                         .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -75,14 +72,13 @@ public class SecurityConfig {
                         .pathMatchers("/api-docs", "/api-docs/**").permitAll()
                         .pathMatchers("/v3/api-docs/**").permitAll()
                         .pathMatchers("/webjars/**").permitAll()
-                        .pathMatchers("/api/v1/ai/qso-description").permitAll()
                         .pathMatchers("/api/v1/lookup/**").permitAll()
+                        .pathMatchers("/api/v1/ai/qso-description").permitAll()
 
                         // Require ADMIN role for admin endpoints
                         .pathMatchers("/api/v1/admin/**").hasRole("ADMIN")
 
                         // Require authentication for protected endpoints
-                        .pathMatchers("/api/v1/auth/me").authenticated()
                         .pathMatchers("/api/v1/qso/**").authenticated()
                         .pathMatchers("/api/v1/stats/**").authenticated()
                         .pathMatchers("/api/v1/export/**").authenticated()
