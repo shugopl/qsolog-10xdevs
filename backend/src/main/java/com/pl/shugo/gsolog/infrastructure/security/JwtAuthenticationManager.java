@@ -26,30 +26,32 @@ public class JwtAuthenticationManager implements ReactiveAuthenticationManager {
     public Mono<Authentication> authenticate(Authentication authentication) {
         String token = authentication.getCredentials().toString();
 
-        try {
-            if (!jwtUtil.validateToken(token)) {
-                return Mono.empty();
+        return Mono.defer(() -> {
+            try {
+                if (!jwtUtil.validateToken(token)) {
+                    return Mono.error(new org.springframework.security.authentication.BadCredentialsException("Invalid JWT token"));
+                }
+
+                UUID userId = jwtUtil.extractUserId(token);
+                String username = jwtUtil.extractUsername(token);
+                String role = jwtUtil.extractRole(token);
+
+                List<SimpleGrantedAuthority> authorities = List.of(
+                        new SimpleGrantedAuthority("ROLE_" + role)
+                );
+
+                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                        userId,
+                        token,
+                        authorities
+                );
+                auth.setDetails(username);
+
+                return Mono.just(auth);
+            } catch (Exception e) {
+                // Any parsing/validation issue should behave like "invalid token"
+                return Mono.error(new org.springframework.security.authentication.BadCredentialsException("Invalid JWT token", e));
             }
-
-            UUID userId = jwtUtil.extractUserId(token);
-            String username = jwtUtil.extractUsername(token);
-            String role = jwtUtil.extractRole(token);
-
-            List<SimpleGrantedAuthority> authorities = List.of(
-                    new SimpleGrantedAuthority("ROLE_" + role)
-            );
-
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                    userId,
-                    token,
-                    authorities
-            );
-            auth.setDetails(username);
-
-            return Mono.just(auth);
-        } catch (Exception e) {
-            // Any parsing/validation issue should behave like "invalid token"
-            return Mono.empty();
-        }
+        });
     }
 }
