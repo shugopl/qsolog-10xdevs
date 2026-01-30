@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -36,6 +34,11 @@ services:
       JWT_SECRET: CHANGE_THIS_SECRET_IN_PRODUCTION_MIN_256_BITS_LONG_KEY_FOR_HS512
       FLYWAY_ENABLED: "true"
       CORS_ORIGINS: http://localhost,http://localhost:80
+      # Admin bootstrap (creates admin user on first startup)
+      ADMIN_BOOTSTRAP: "true"
+      ADMIN_EMAIL: admin@qsolog.local
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: Admin123!
       # Optional: Add HamQTH credentials
       # HAMQTH_USERNAME: your_username
       # HAMQTH_PASSWORD: your_password

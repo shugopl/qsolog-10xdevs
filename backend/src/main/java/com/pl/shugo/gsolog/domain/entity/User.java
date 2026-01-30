@@ -40,13 +40,12 @@ public class User {
     // Factory method for new user registration
     public static User create(String email, String username, String passwordHash, Role role) {
         User user = new User();
-        user.id = UUID.randomUUID();
+        // Don't set ID - let database generate it with uuid_generate_v4()
         user.email = email;
         user.username = username;
         user.passwordHash = passwordHash;
         user.role = role != null ? role : Role.OPERATOR;
-        user.createdAt = Instant.now();
-        user.updatedAt = Instant.now();
+        // Don't set timestamps - let database triggers handle it
         return user;
     }
 

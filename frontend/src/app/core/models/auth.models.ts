@@ -1,5 +1,5 @@
 export interface LoginRequest {
-  username: string;
+  usernameOrEmail: string;
   password: string;
 }
 
@@ -11,6 +11,8 @@ export interface RegisterRequest {
 
 export interface LoginResponse {
   accessToken: string;
+  tokenType: string;
+  expiresInSeconds: number;
 }
 
 export interface UserResponse {
