@@ -32,7 +32,7 @@ import java.time.LocalTime;
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @AutoConfigureWebTestClient
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 class QsoControllerTest {
 
     @Container
