@@ -11,6 +11,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.reactive.function.server.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -54,11 +56,12 @@ public class GlobalErrorHandler extends DefaultErrorAttributes {
                     fieldErrors
             );
         } else if (error instanceof ResponseStatusException rse) {
+            String detail = rse.getReason() != null ? rse.getReason() : status.getReasonPhrase();
             errorResponse = new ErrorResponse(
                     "about:blank",
-                    rse.getReason() != null ? rse.getReason() : status.getReasonPhrase(),
+                    status.getReasonPhrase(),
                     status.value(),
-                    rse.getMessage(),
+                    detail,
                     path
             );
         } else {
@@ -75,6 +78,12 @@ public class GlobalErrorHandler extends DefaultErrorAttributes {
     }
 
     private HttpStatus determineHttpStatus(Throwable error) {
+        if (error instanceof AuthenticationException) {
+            return HttpStatus.UNAUTHORIZED;
+        }
+        if (error instanceof AccessDeniedException) {
+            return HttpStatus.FORBIDDEN;
+        }
         if (error instanceof ResponseStatusException rse) {
             return HttpStatus.resolve(rse.getStatusCode().value());
         } else if (error instanceof WebExchangeBindException) {

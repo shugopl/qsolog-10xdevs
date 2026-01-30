@@ -2,10 +2,12 @@ package com.pl.shugo.gsolog.api.controller;
 
 import com.pl.shugo.gsolog.api.dto.CallsignLookupResponse;
 import com.pl.shugo.gsolog.domain.port.CallsignLookupPort;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
 /**
@@ -31,6 +33,10 @@ public class LookupController {
      */
     @GetMapping("/{callsign}")
     public Mono<CallsignLookupResponse> lookupCallsign(@PathVariable String callsign) {
-        return callsignLookupPort.lookup(callsign);
+        return callsignLookupPort.lookup(callsign)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Callsign not found"
+                )));
     }
 }

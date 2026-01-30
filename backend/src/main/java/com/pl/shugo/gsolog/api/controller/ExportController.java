@@ -1,6 +1,7 @@
 package com.pl.shugo.gsolog.api.controller;
 
 import com.pl.shugo.gsolog.application.service.ExportService;
+import com.pl.shugo.gsolog.infrastructure.security.AuthenticatedUserIdResolver;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
@@ -17,7 +18,6 @@ import reactor.core.publisher.Flux;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.UUID;
 
 /**
  * Export REST controller.
@@ -31,9 +31,11 @@ public class ExportController {
     private static final DateTimeFormatter FILE_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd");
 
     private final ExportService exportService;
+    private final AuthenticatedUserIdResolver userIdResolver;
 
-    public ExportController(ExportService exportService) {
+    public ExportController(ExportService exportService, AuthenticatedUserIdResolver userIdResolver) {
         this.exportService = exportService;
+        this.userIdResolver = userIdResolver;
     }
 
     /**
@@ -51,7 +53,7 @@ public class ExportController {
             @RequestParam(required = false) LocalDate to,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getPrincipal().toString());
+        var userId = userIdResolver.resolve(authentication);
 
         Flux<DataBuffer> adifData = exportService.generateAdif(userId, from, to)
                 .map(line -> bufferFactory.wrap(line.getBytes(StandardCharsets.UTF_8)));
@@ -78,7 +80,7 @@ public class ExportController {
             @RequestParam(required = false) LocalDate to,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getPrincipal().toString());
+        var userId = userIdResolver.resolve(authentication);
 
         Flux<DataBuffer> csvData = exportService.generateCsv(userId, from, to)
                 .map(line -> bufferFactory.wrap(line.getBytes(StandardCharsets.UTF_8)));

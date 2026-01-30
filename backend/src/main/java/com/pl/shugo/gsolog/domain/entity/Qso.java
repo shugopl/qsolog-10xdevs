@@ -90,7 +90,7 @@ public class Qso {
                              String customMode, String rstSent, String rstRecv, String qth,
                              String gridSquare, String notes) {
         Qso qso = new Qso();
-        qso.id = UUID.randomUUID();
+        // Don't set ID - let database generate it with uuid_generate_v4()
         qso.userId = userId;
         qso.theirCallsign = theirCallsign;
         qso.qsoDate = qsoDate;
@@ -108,8 +108,7 @@ public class Qso {
         qso.qslStatus = QslStatus.NONE;
         qso.lotwStatus = LotwStatus.UNKNOWN;
         qso.eqslStatus = EqslStatus.UNKNOWN;
-        qso.createdAt = Instant.now();
-        qso.updatedAt = Instant.now();
+        // Let DB defaults/triggers handle timestamps (schema provides defaults)
         return qso;
     }
 

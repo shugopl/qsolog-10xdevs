@@ -6,14 +6,13 @@ import com.pl.shugo.gsolog.api.dto.RegisterRequest;
 import com.pl.shugo.gsolog.api.dto.UserResponse;
 import com.pl.shugo.gsolog.application.service.AuthService;
 import com.pl.shugo.gsolog.domain.enums.Role;
+import com.pl.shugo.gsolog.infrastructure.security.AuthenticatedUserIdResolver;
 import com.pl.shugo.gsolog.infrastructure.security.JwtProperties;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
-
-import java.util.UUID;
 
 /**
  * Authentication REST controller.
@@ -25,10 +24,12 @@ public class AuthController {
 
     private final AuthService authService;
     private final JwtProperties jwtProperties;
+    private final AuthenticatedUserIdResolver userIdResolver;
 
-    public AuthController(AuthService authService, JwtProperties jwtProperties) {
+    public AuthController(AuthService authService, JwtProperties jwtProperties, AuthenticatedUserIdResolver userIdResolver) {
         this.authService = authService;
         this.jwtProperties = jwtProperties;
+        this.userIdResolver = userIdResolver;
     }
 
     /**
@@ -64,7 +65,7 @@ public class AuthController {
      */
     @GetMapping("/me")
     public Mono<UserResponse> getCurrentUser(Authentication authentication) {
-        UUID userId = UUID.fromString(authentication.getPrincipal().toString());
+        var userId = userIdResolver.resolve(authentication);
         return authService.getCurrentUser(userId)
                 .map(UserResponse::from);
     }

@@ -1,12 +1,17 @@
 package com.pl.shugo.gsolog.infrastructure.security;
 
 import com.pl.shugo.gsolog.QsoLogApplication;
+import com.pl.shugo.gsolog.api.dto.QsoDescriptionRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 /**
  * Tests for security configuration.
@@ -78,14 +83,38 @@ class SecurityTest {
         webTestClient.get()
                 .uri("/api/v1/lookup/CALL")
                 .exchange()
-                .expectStatus().isUnauthorized();
+                // Lookup is public, but mock adapter returns empty => 404
+                .expectStatus().isNotFound();
     }
 
     @Test
     void protectedAiEndpoint_shouldReturn401WithoutToken() {
         webTestClient.post()
-                .uri("/api/v1/ai/qso-description")
+                .uri("/api/v1/ai/period-report")
                 .exchange()
                 .expectStatus().isUnauthorized();
+    }
+
+    @Test
+    void publicAiQsoDescription_shouldBeAccessibleWithoutAuthentication() {
+        QsoDescriptionRequest request = new QsoDescriptionRequest(
+                "SP1ABC",
+                LocalDate.of(2024, 1, 15),
+                LocalTime.of(14, 30),
+                "20m",
+                "CW",
+                "59",
+                "59",
+                null,
+                null,
+                "EN"
+        );
+
+        webTestClient.post()
+                .uri("/api/v1/ai/qso-description")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .exchange()
+                .expectStatus().isOk();
     }
 }

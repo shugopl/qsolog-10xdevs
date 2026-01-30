@@ -26,6 +26,7 @@ com/pl/shugo/gsolog/domain/entity/Qso.class
 com/pl/shugo/gsolog/infrastructure/security/JwtProperties.class
 com/pl/shugo/gsolog/domain/repository/AiReportRepository.class
 com/pl/shugo/gsolog/application/service/ExportService.class
+com/pl/shugo/gsolog/api/controller/AdminController.class
 com/pl/shugo/gsolog/domain/entity/AiReport.class
 com/pl/shugo/gsolog/infrastructure/adapter/HamQthCallsignLookupAdapter$CachedLookup.class
 com/pl/shugo/gsolog/domain/port/AiHelperPort.class
@@ -45,12 +46,14 @@ com/pl/shugo/gsolog/api/dto/CreateQsoRequest.class
 com/pl/shugo/gsolog/api/dto/DayStats.class
 com/pl/shugo/gsolog/domain/enums/LotwStatus.class
 com/pl/shugo/gsolog/domain/enums/AdifMode.class
+com/pl/shugo/gsolog/application/service/AdminService.class
 com/pl/shugo/gsolog/infrastructure/config/AiConfig.class
 com/pl/shugo/gsolog/api/controller/AuthController.class
 com/pl/shugo/gsolog/api/dto/UserResponse.class
 com/pl/shugo/gsolog/api/dto/Totals.class
 com/pl/shugo/gsolog/domain/enums/AdifSubmode.class
 com/pl/shugo/gsolog/api/dto/AiTextResponse.class
+com/pl/shugo/gsolog/infrastructure/security/AuthenticatedUserIdResolver.class
 com/pl/shugo/gsolog/domain/enums/Role.class
 com/pl/shugo/gsolog/api/dto/StatsResponse.class
 com/pl/shugo/gsolog/domain/repository/UserRepository.class

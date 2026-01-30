@@ -14,6 +14,14 @@
         <mat-icon matListItemIcon>auto_awesome</mat-icon>
         <span matListItemTitle>AI Reports</span>
       </a>
+      @if (authService.currentUser$ | async; as user) {
+        @if (user.role === 'ADMIN') {
+          <a mat-list-item routerLink="/admin/users" routerLinkActive="active">
+            <mat-icon matListItemIcon>admin_panel_settings</mat-icon>
+            <span matListItemTitle>Users</span>
+          </a>
+        }
+      }
     </mat-nav-list>
   </mat-sidenav>
 

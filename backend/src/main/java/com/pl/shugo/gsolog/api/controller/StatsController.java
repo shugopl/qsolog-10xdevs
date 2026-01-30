@@ -2,7 +2,7 @@ package com.pl.shugo.gsolog.api.controller;
 
 import com.pl.shugo.gsolog.api.dto.StatsResponse;
 import com.pl.shugo.gsolog.application.service.StatsService;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -30,18 +30,16 @@ public class StatsController {
      * Get statistics summary for the authenticated user.
      * Optionally filtered by date range.
      *
-     * @param from           Start date (inclusive, optional)
-     * @param to             End date (inclusive, optional)
-     * @param authentication JWT authentication
+     * @param userId User ID from JWT token principal
+     * @param from   Start date (inclusive, optional)
+     * @param to     End date (inclusive, optional)
      * @return Statistics response with counts by band, mode, day, and totals
      */
     @GetMapping("/summary")
     public Mono<StatsResponse> getStatsSummary(
+            @AuthenticationPrincipal UUID userId,
             @RequestParam(required = false) LocalDate from,
-            @RequestParam(required = false) LocalDate to,
-            Authentication authentication) {
-
-        UUID userId = UUID.fromString(authentication.getPrincipal().toString());
+            @RequestParam(required = false) LocalDate to) {
 
         return statsService.getStatsSummary(userId, from, to);
     }

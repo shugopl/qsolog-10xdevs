@@ -5,7 +5,7 @@ import com.pl.shugo.gsolog.api.dto.DuplicateWarningResponse;
 import com.pl.shugo.gsolog.api.dto.QsoResponse;
 import com.pl.shugo.gsolog.api.dto.UpdateQsoRequest;
 import com.pl.shugo.gsolog.application.service.QsoService;
-import com.pl.shugo.gsolog.domain.entity.Qso;
+import com.pl.shugo.gsolog.infrastructure.security.AuthenticatedUserIdResolver;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,9 +26,11 @@ import java.util.UUID;
 public class QsoController {
 
     private final QsoService qsoService;
+    private final AuthenticatedUserIdResolver userIdResolver;
 
-    public QsoController(QsoService qsoService) {
+    public QsoController(QsoService qsoService, AuthenticatedUserIdResolver userIdResolver) {
         this.qsoService = qsoService;
+        this.userIdResolver = userIdResolver;
     }
 
     /**
@@ -41,7 +43,7 @@ public class QsoController {
             @Valid @RequestBody CreateQsoRequest request,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getPrincipal().toString());
+        UUID userId = userIdResolver.resolve(authentication);
 
         return qsoService.createQso(
                 userId,
@@ -80,7 +82,7 @@ public class QsoController {
             @RequestParam(defaultValue = "20") int size,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getPrincipal().toString());
+        UUID userId = userIdResolver.resolve(authentication);
 
         return qsoService.findAll(userId, callsign, band, from, to, page, size)
                 .map(QsoResponse::from);
@@ -95,7 +97,7 @@ public class QsoController {
             @PathVariable UUID id,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getPrincipal().toString());
+        UUID userId = userIdResolver.resolve(authentication);
 
         return qsoService.findById(id, userId)
                 .map(QsoResponse::from);
@@ -111,7 +113,7 @@ public class QsoController {
             @Valid @RequestBody UpdateQsoRequest request,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getPrincipal().toString());
+        UUID userId = userIdResolver.resolve(authentication);
 
         return qsoService.updateQso(
                 id,
@@ -172,7 +174,7 @@ public class QsoController {
             @PathVariable UUID id,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getPrincipal().toString());
+        UUID userId = userIdResolver.resolve(authentication);
 
         return qsoService.deleteQso(id, userId);
     }

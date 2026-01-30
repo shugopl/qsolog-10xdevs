@@ -2,11 +2,13 @@ package com.pl.shugo.gsolog.api.controller;
 
 import com.pl.shugo.gsolog.api.dto.CallsignSuggestionResponse;
 import com.pl.shugo.gsolog.application.service.SuggestionsService;
-import org.springframework.security.core.Authentication;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
@@ -29,16 +31,19 @@ public class SuggestionsController {
      * Get suggestions for a callsign based on user's QSO history.
      * Returns information from past QSOs: name, QTH, notes, common band/mode.
      *
-     * @param callsign       Callsign to get suggestions for
-     * @param authentication JWT authentication
+     * @param userId   User ID from JWT token principal
+     * @param callsign Callsign to get suggestions for
      * @return Suggestion response if history found, empty otherwise
      */
     @GetMapping("/callsign/{callsign}")
     public Mono<CallsignSuggestionResponse> getCallsignSuggestions(
-            @PathVariable String callsign,
-            Authentication authentication) {
+            @AuthenticationPrincipal UUID userId,
+            @PathVariable String callsign) {
 
-        UUID userId = UUID.fromString(authentication.getPrincipal().toString());
-        return suggestionsService.getSuggestions(userId, callsign);
+        return suggestionsService.getSuggestions(userId, callsign)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "No suggestions found for callsign"
+                )));
     }
 }
