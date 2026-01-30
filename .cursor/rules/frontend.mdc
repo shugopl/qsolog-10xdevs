@@ -1,0 +1,81 @@
+# frontend.mdc — Frontend rules (Angular)
+
+## Stack expectations
+- Angular (current), Angular Material UI
+- Reactive forms, RxJS
+- Routing + guards
+- Strict TypeScript
+
+If you use SSR or other UI libs, keep the same quality/structure rules.
+
+---
+
+## UI/UX principles
+- Keep UI consistent with existing Material layout.
+- Prefer **browse + filter + details** patterns.
+- Loading/error/empty states are mandatory in any data screen.
+- Avoid showing raw IDs; show callsigns/emails/usernames; ID only where needed for debugging (admin only).
+
+---
+
+## State and data flow
+- API calls via a dedicated `ApiClient`/service layer.
+- Never call `fetch` directly inside components.
+- Components should be mostly “dumb”; business logic lives in services/facades.
+- Prefer typed DTOs aligned with backend.
+
+---
+
+## Date/time rules (critical)
+- Always handle QSO date/time as UTC in transport.
+- UI may display local time but must not change stored value unless user edits.
+- Always show timezone or clarify “UTC” in forms and exports.
+
+---
+
+## Security in UI
+- Role-based UI: Admin screens hidden unless user has role ADMIN.
+- Do not store tokens in unsafe places; prefer secure storage patterns used in the repo.
+- Any admin-only route must have a guard.
+
+---
+
+## Naming and structure (recommended)
+- `features/qso/` — QSO list, details, create form, import/export
+- `features/admin/` — admin users browse (read-only)
+- `shared/` — components/pipes/utils, no business logic
+- `core/` — auth, interceptors, guards, configuration
+
+---
+
+## QSO screens (MVP expectations)
+1. **QSO List**: table + filters (band, mode, date range, callsign).
+2. **QSO Create**: validated form with sensible defaults (UTC now, last used station callsign).
+3. **QSO Details**: readonly summary, export preview.
+4. **ADIF Export**: user can export filtered set.
+5. **ADIF Import**: show preview + import summary + error rows (do not silently drop).
+
+Validation hints:
+- callsign: trimmed, uppercase normalization for display (store canonical + raw if needed)
+- band/mode: dropdown from enums (ADIF core lists)
+- time: ensure proper parsing and UTC conversion
+
+---
+
+## Testing rules (frontend)
+- At least:
+  - one component test for list/filter logic or service mapping
+  - one guard/auth test (ADMIN route protection)
+- When changing DTO mapping, update tests.
+
+---
+
+## AI-specific “do / don’t”
+DO:
+- reuse existing Material components/patterns
+- ensure strong typing end-to-end
+- add error handling and toasts/snackbars
+DON’T:
+- introduce new state library unless required
+- bypass guards for admin routes
+- add heavy UI dependencies without justification

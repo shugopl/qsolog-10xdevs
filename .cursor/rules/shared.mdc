@@ -1,0 +1,79 @@
+# shared.mdc — Shared rules (repo-wide)
+
+## Context (what we are building)
+Production-quality **Ham Radio QSO (contact) Logbook** web app.
+Key goals:
+- reliable QSO logging + browsing + filtering
+- import/export in **ADIF** (MVP: core fields + safe vendor fields)
+- role-based access (ADMIN / OPERATOR) and secure-by-default
+- clean, maintainable architecture (frontend + backend)
+
+## Repository assumptions (adjust if needed)
+- `/frontend` — Angular app (Material UI)
+- `/backend` — Spring Boot WebFlux (Java 25) + PostgreSQL (R2DBC) + Flyway
+- `/docs` — documentation (Astro or Markdown)
+
+If your repo differs, adapt paths but keep the rules.
+
+---
+
+## Global engineering principles
+1. **Security first**: never leak secrets, tokens, password hashes, internal IDs not needed in UI.
+2. **Data privacy**: API returns minimum required fields; redact sensitive values by default.
+3. **UTC always**: all QSO dates/times stored and transported in UTC. UI can display local time.
+4. **Backward compatibility**: don’t break existing endpoints or exported ADIF format.
+5. **Small changes**: prefer minimal diffs, incremental PR-sized changes.
+
+---
+
+## How AI should work in this repo
+When implementing anything:
+1. **Search first**: locate existing patterns (DTOs, endpoints, services, components).
+2. **Follow architecture**: do not bypass layers (UI → API → application → domain → persistence).
+3. **Prefer reuse**: extend existing mappers/validators/utilities rather than duplicating.
+4. **Write tests**: at least one happy-path and one failure-path for non-trivial change.
+5. **No “magic” dependencies**: add libs only when necessary and justify.
+
+Output style expectations:
+- Provide **file paths + patches/snippets** (copy-paste friendly).
+- Include **commands** to run checks/tests locally.
+- If unsure, make the **safest assumption** (secure defaults, minimal exposure).
+
+---
+
+## Domain rules (Ham Radio / QSO)
+### MVP “valid QSO” fields (minimum)
+- `theirCallsign` (ADIF: CALL) — required
+- `qsoDate` (ADIF: QSO_DATE, UTC date) — required
+- `timeOn` (ADIF: TIME_ON, UTC time) — required
+- `band` (ADIF: BAND) — required (use ADIF core list)
+- `mode` (ADIF: MODE) — required (use ADIF core list)
+Optional MVP:
+- `rstSent`, `rstRcvd`, `freq`, `stationCallsign`, `operatorCallsign`, `qslStatus*`, notes
+
+### ADIF export/import rules
+- Export must be deterministic (stable ordering of fields, stable formatting).
+- Unknown/custom mode/submode: map to vendor field, e.g. `APP_QSOLOG_CUSTOMMODE`.
+- Never lose data: if field not supported in UI, store as “raw/vendor” metadata.
+
+---
+
+## Formatting & commits
+- Use consistent naming: `camelCase` (TS), `PascalCase` (classes), `UPPER_SNAKE` (enums where relevant)
+- Conventional commits recommended: `feat:`, `fix:`, `refactor:`, `test:`, `docs:`
+- Keep README/docs updated when adding new endpoints or QSO fields.
+
+---
+
+## Quality gates (Definition of Done)
+- ✅ unit tests pass
+- ✅ lint/format pass
+- ✅ no sensitive fields in API responses
+- ✅ ADIF export regression tests updated if mapping changes
+- ✅ error handling returns consistent problem payload
+
+## Security checklist (quick)
+- JWT required for protected endpoints
+- Role checks for admin-only screens/endpoints
+- Validate input (backend + frontend)
+- No blocking calls on reactive threads (WebFlux)

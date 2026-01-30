@@ -1,0 +1,96 @@
+# backend.mdc — Backend rules (Spring Boot WebFlux, Java 25)
+
+## Stack
+- Java 25
+- Spring Boot 4.x
+- WebFlux (reactive, non-blocking)
+- PostgreSQL + R2DBC
+- Flyway for migrations
+- JWT auth + roles (ADMIN / OPERATOR)
+
+---
+
+## Architecture (must follow)
+- `api/` — controllers, request/response DTOs, security annotations
+- `application/` — use cases, orchestration, transactions
+- `domain/` — entities, value objects, domain services, invariants
+- `persistence/` — repositories, mappers, R2DBC entities
+Do not mix layers.
+
+---
+
+## Reactive rules (non-negotiable)
+- No blocking calls on event-loop threads (no `block()`, no JDBC, no file IO without boundedElastic).
+- If you must do blocking work: wrap and shift to `Schedulers.boundedElastic()` with clear boundaries.
+- Prefer returning `Mono`/`Flux` end-to-end.
+
+---
+
+## API conventions
+- Versioned base path: `/api/v1/...`
+- Use consistent error payloads (Problem Details style preferred).
+- Validation:
+  - request DTO validation + domain validation (invariants)
+  - fail fast with meaningful error messages
+
+DTO exposure rules:
+- Never expose: password hashes, refresh tokens, internal secrets, audit internals unless admin.
+- Admin user list endpoint: return only `id`, `email`, `username`, `role` (and similarly safe fields).
+
+---
+
+## Security
+- JWT required for all non-public endpoints.
+- Admin-only endpoints under `/api/v1/admin/**` and enforced by role checks.
+- Prefer method-level security annotations + tests verifying access control.
+
+Example (conceptual):
+- `GET /api/v1/admin/users` — ADMIN only, read-only list/stream of users DTOs
+- QSO endpoints:
+  - `POST /api/v1/qso` — create
+  - `GET /api/v1/qso` — list with filters
+  - `GET /api/v1/qso/{id}` — details
+  - `POST /api/v1/qso/adif/import` — import (validated)
+  - `GET /api/v1/qso/adif/export` — export (filtered)
+
+---
+
+## Persistence & migrations (Flyway)
+- Every schema change must have a Flyway migration:
+  - `V{yyyyMMddHHmm}__description.sql` (or repo’s convention)
+- Avoid destructive migrations in MVP unless necessary.
+- Use constraints for data integrity (not null where required, enums via check constraints if used).
+
+---
+
+## ADIF import/export rules
+- Export deterministic & stable.
+- Store unknown fields safely (vendor/app fields) rather than discarding.
+- Custom mode support:
+  - if `mode/submode` not in core list, export vendor field `APP_QSOLOG_CUSTOMMODE`
+  - keep round-trip: import → store → export yields same data as much as possible
+
+---
+
+## Testing requirements
+Minimum:
+- Unit tests for mapping/validation (QSO create + ADIF export mapping)
+- Integration tests with Testcontainers for repositories/endpoints (at least one for QSO list)
+- Security test: ADMIN-only endpoint forbidden for OPERATOR
+
+---
+
+## Observability
+- Structured logging (no secrets)
+- Add correlation IDs if the repo uses them
+- Health endpoints via Actuator (liveness/readiness if present in repo)
+
+---
+
+## AI-specific “implementation checklist”
+Before finalizing a change:
+1. Verify endpoint security (role)
+2. Verify DTO does not leak sensitive fields
+3. Add/adjust Flyway migrations if persistence changes
+4. Add/adjust tests (especially ADIF mapping regression)
+5. Ensure no blocking calls in WebFlux chain
