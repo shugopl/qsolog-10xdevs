@@ -21,6 +21,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -61,11 +62,14 @@ class ExportControllerTest {
     private WebTestClient webTestClient;
 
     private String userToken;
+    private String username;
 
     @BeforeEach
     void setUp() {
         // Register and login user
-        RegisterRequest user = new RegisterRequest("exportuser@test.com", "exportuser", "password123");
+        String suffix = UUID.randomUUID().toString().replace("-", "");
+        username = "exportuser_" + suffix;
+        RegisterRequest user = new RegisterRequest("exportuser+" + suffix + "@test.com", username, "password123");
         webTestClient.post().uri("/api/v1/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(user)
@@ -74,7 +78,7 @@ class ExportControllerTest {
 
         byte[] tokenBytes = webTestClient.post().uri("/api/v1/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(new LoginRequest("exportuser", "password123"))
+                .bodyValue(new LoginRequest(username, "password123"))
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
