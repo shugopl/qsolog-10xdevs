@@ -79,3 +79,74 @@ DON’T:
 - introduce new state library unless required
 - bypass guards for admin routes
 - add heavy UI dependencies without justification
+
+---
+
+## Angular 20+ standards checklist (must follow)
+This section defines “modern Angular” expectations for this repo.
+
+### 1) Standalone by default
+- All components, directives, pipes are **standalone** unless integrating legacy code.
+- Routing uses standalone `Routes` + lazy loading per feature.
+- Avoid creating new NgModules.
+
+### 2) Modern template syntax
+- Prefer new control flow:
+  - `@if / @else`
+  - `@for (...; track ...)`
+  - `@switch`
+- Use `@defer` for heavy/optional UI (e.g., import preview, large tables).
+- Always provide stable tracking keys in `@for`.
+
+### 3) Signals-first UI state
+- Keep view state in signals:
+  - `filters`, `sort`, `pagination`, `selectedRow`, `viewModel`
+- Use:
+  - `computed(...)` for derived view state
+  - `effect(...)` only for controlled side effects (logging, auto-load on filter changes)
+- Avoid mixing too many sources of truth (signals + mutable fields).
+
+### 4) RxJS where it belongs (async + streams)
+- Use `Observable` for:
+  - HTTP calls (HttpClient)
+  - WebSocket/SSE streams (if used)
+  - combining async sources
+- Convert to signals for templates via `toSignal(...)` when needed.
+- Never leave unmanaged subscriptions in components. Prefer:
+  - `async` pipe in templates
+  - `takeUntilDestroyed()` in services/components when subscribing manually
+
+### 5) Functional DI & providers (preferred)
+- Prefer functional providers and interceptor registration (Angular modern style).
+- Avoid deprecated patterns and legacy DI workarounds.
+
+### 6) Change detection / performance rules
+- Prefer `ChangeDetectionStrategy.OnPush` for all new components.
+- Avoid expensive work in templates; compute in facade/service or `computed(...)`.
+- Use `@defer` + placeholder for heavy sections.
+- Use virtual scroll for large lists (if the dataset can be big).
+
+### 7) Zoneless (optional, only if repo supports it)
+If the repo is configured for zoneless:
+- Avoid relying on Zone.js side-effects.
+- Trigger UI updates via signals/observables.
+If not configured, do not attempt migration without explicit task.
+
+### 8) SSR/Hydration (optional)
+If SSR/hydration is enabled in the repo:
+- Ensure guards/resolvers and API calls are SSR-safe.
+- Avoid direct access to `window/document` without platform checks.
+
+### 9) Strict typing & linting
+- `strict` and `strictTemplates` must remain enabled.
+- No `any` unless extremely justified and localized.
+- DTOs must be typed and aligned with backend contracts.
+
+### 10) “Modern Angular” acceptance criteria for new features
+A feature is considered Angular 20+ compliant if:
+- standalone routes + lazy-loaded feature
+- control flow uses `@if/@for` (not `*ngIf/*ngFor`)
+- state managed via signals (facade/service), not component fields
+- no unmanaged subscriptions
+- OnPush enabled
+- loading/error/empty states present
