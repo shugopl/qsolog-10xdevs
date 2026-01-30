@@ -54,11 +54,12 @@ public class GlobalErrorHandler extends DefaultErrorAttributes {
                     fieldErrors
             );
         } else if (error instanceof ResponseStatusException rse) {
+            String detail = rse.getReason() != null ? rse.getReason() : status.getReasonPhrase();
             errorResponse = new ErrorResponse(
                     "about:blank",
-                    rse.getReason() != null ? rse.getReason() : status.getReasonPhrase(),
+                    status.getReasonPhrase(),
                     status.value(),
-                    rse.getMessage(),
+                    detail,
                     path
             );
         } else {

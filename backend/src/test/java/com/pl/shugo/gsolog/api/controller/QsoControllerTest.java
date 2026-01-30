@@ -461,10 +461,10 @@ class QsoControllerTest {
     void getAllQsos_shouldReturnOnlyUserQsos() {
         // User 1 creates 2 QSOs
         createQsoAndGetId(user1Token);
-        createQsoAndGetId(user1Token);
+        createQsoAndGetId(user1Token, "OM1TEST2");
 
         // User 2 creates 1 QSO
-        createQsoAndGetId(user2Token);
+        createQsoAndGetId(user2Token, "OM2TEST");
 
         // User 1 should see only their 2 QSOs
         webTestClient.get()
@@ -477,8 +477,12 @@ class QsoControllerTest {
     }
 
     private String createQsoAndGetId(String token) {
+        return createQsoAndGetId(token, "OM1TEST");
+    }
+
+    private String createQsoAndGetId(String token, String callsign) {
         CreateQsoRequest request = new CreateQsoRequest(
-                "OM1TEST",
+                callsign,
                 LocalDate.of(2024, 1, 30),
                 LocalTime.of(10, 0),
                 "20m",
