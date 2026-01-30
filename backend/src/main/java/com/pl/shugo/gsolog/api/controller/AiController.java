@@ -4,6 +4,7 @@ import com.pl.shugo.gsolog.api.dto.AiReportResponse;
 import com.pl.shugo.gsolog.api.dto.AiTextResponse;
 import com.pl.shugo.gsolog.api.dto.QsoDescriptionRequest;
 import com.pl.shugo.gsolog.application.service.AiService;
+import com.pl.shugo.gsolog.infrastructure.security.AuthenticatedUserIdResolver;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -21,9 +22,11 @@ import java.util.UUID;
 public class AiController {
 
     private final AiService aiService;
+    private final AuthenticatedUserIdResolver userIdResolver;
 
-    public AiController(AiService aiService) {
+    public AiController(AiService aiService, AuthenticatedUserIdResolver userIdResolver) {
         this.aiService = aiService;
+        this.userIdResolver = userIdResolver;
     }
 
     /**
@@ -56,7 +59,7 @@ public class AiController {
             @RequestParam(defaultValue = "EN") String lang,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getPrincipal().toString());
+        var userId = userIdResolver.resolve(authentication);
         return aiService.generatePeriodReport(userId, from, to, lang);
     }
 
@@ -75,7 +78,7 @@ public class AiController {
             @RequestParam(required = false) LocalDate to,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getPrincipal().toString());
+        var userId = userIdResolver.resolve(authentication);
         return aiService.getReports(userId, from, to);
     }
 
@@ -91,7 +94,7 @@ public class AiController {
             @PathVariable UUID id,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getPrincipal().toString());
+        var userId = userIdResolver.resolve(authentication);
         return aiService.getReport(userId, id);
     }
 }

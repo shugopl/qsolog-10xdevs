@@ -2,6 +2,7 @@ package com.pl.shugo.gsolog.api.controller;
 
 import com.pl.shugo.gsolog.api.dto.StatsResponse;
 import com.pl.shugo.gsolog.application.service.StatsService;
+import com.pl.shugo.gsolog.infrastructure.security.AuthenticatedUserIdResolver;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 /**
  * Statistics REST controller.
@@ -21,9 +21,11 @@ import java.util.UUID;
 public class StatsController {
 
     private final StatsService statsService;
+    private final AuthenticatedUserIdResolver userIdResolver;
 
-    public StatsController(StatsService statsService) {
+    public StatsController(StatsService statsService, AuthenticatedUserIdResolver userIdResolver) {
         this.statsService = statsService;
+        this.userIdResolver = userIdResolver;
     }
 
     /**
@@ -41,8 +43,7 @@ public class StatsController {
             @RequestParam(required = false) LocalDate to,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getPrincipal().toString());
-
+        var userId = userIdResolver.resolve(authentication);
         return statsService.getStatsSummary(userId, from, to);
     }
 }

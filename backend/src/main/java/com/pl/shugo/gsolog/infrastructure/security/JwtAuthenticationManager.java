@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * JWT-based reactive authentication manager.
@@ -25,25 +26,30 @@ public class JwtAuthenticationManager implements ReactiveAuthenticationManager {
     public Mono<Authentication> authenticate(Authentication authentication) {
         String token = authentication.getCredentials().toString();
 
-        if (!jwtUtil.validateToken(token)) {
+        try {
+            if (!jwtUtil.validateToken(token)) {
+                return Mono.empty();
+            }
+
+            UUID userId = jwtUtil.extractUserId(token);
+            String username = jwtUtil.extractUsername(token);
+            String role = jwtUtil.extractRole(token);
+
+            List<SimpleGrantedAuthority> authorities = List.of(
+                    new SimpleGrantedAuthority("ROLE_" + role)
+            );
+
+            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                    userId,
+                    token,
+                    authorities
+            );
+            auth.setDetails(username);
+
+            return Mono.just(auth);
+        } catch (Exception e) {
+            // Any parsing/validation issue should behave like "invalid token"
             return Mono.empty();
         }
-
-        String userId = jwtUtil.extractUserId(token).toString();
-        String username = jwtUtil.extractUsername(token);
-        String role = jwtUtil.extractRole(token);
-
-        List<SimpleGrantedAuthority> authorities = List.of(
-                new SimpleGrantedAuthority("ROLE_" + role)
-        );
-
-        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                userId,
-                token,
-                authorities
-        );
-        auth.setDetails(username);
-
-        return Mono.just(auth);
     }
 }

@@ -2,6 +2,7 @@ package com.pl.shugo.gsolog.api.controller;
 
 import com.pl.shugo.gsolog.api.dto.CallsignSuggestionResponse;
 import com.pl.shugo.gsolog.application.service.SuggestionsService;
+import com.pl.shugo.gsolog.infrastructure.security.AuthenticatedUserIdResolver;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,9 +23,11 @@ import java.util.UUID;
 public class SuggestionsController {
 
     private final SuggestionsService suggestionsService;
+    private final AuthenticatedUserIdResolver userIdResolver;
 
-    public SuggestionsController(SuggestionsService suggestionsService) {
+    public SuggestionsController(SuggestionsService suggestionsService, AuthenticatedUserIdResolver userIdResolver) {
         this.suggestionsService = suggestionsService;
+        this.userIdResolver = userIdResolver;
     }
 
     /**
@@ -40,7 +43,7 @@ public class SuggestionsController {
             @PathVariable String callsign,
             Authentication authentication) {
 
-        UUID userId = UUID.fromString(authentication.getPrincipal().toString());
+        UUID userId = userIdResolver.resolve(authentication);
         return suggestionsService.getSuggestions(userId, callsign)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
