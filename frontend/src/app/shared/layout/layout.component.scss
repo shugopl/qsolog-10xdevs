@@ -1,0 +1,30 @@
+.sidenav-container {
+  height: 100vh;
+}
+
+.sidenav {
+  width: 250px;
+}
+
+.sidenav .mat-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+mat-nav-list a.active {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.user-info {
+  margin-right: 16px;
+}
+
+.content {
+  padding: 20px;
+  min-height: calc(100vh - 64px);
+}

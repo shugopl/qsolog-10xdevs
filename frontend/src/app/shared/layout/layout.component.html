@@ -1,0 +1,35 @@
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav #drawer mode="side" opened class="sidenav">
+    <mat-toolbar color="primary">QSO Log</mat-toolbar>
+    <mat-nav-list>
+      <a mat-list-item routerLink="/qso" routerLinkActive="active">
+        <mat-icon matListItemIcon>radio</mat-icon>
+        <span matListItemTitle>QSO Log</span>
+      </a>
+      <a mat-list-item routerLink="/stats" routerLinkActive="active">
+        <mat-icon matListItemIcon>bar_chart</mat-icon>
+        <span matListItemTitle>Statistics</span>
+      </a>
+      <a mat-list-item routerLink="/ai/reports" routerLinkActive="active">
+        <mat-icon matListItemIcon>auto_awesome</mat-icon>
+        <span matListItemTitle>AI Reports</span>
+      </a>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <mat-toolbar color="primary">
+      <span class="spacer"></span>
+      @if (authService.currentUser$ | async; as user) {
+        <span class="user-info">{{ user.username }}</span>
+        <button mat-icon-button (click)="logout()">
+          <mat-icon>logout</mat-icon>
+        </button>
+      }
+    </mat-toolbar>
+
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

@@ -1,0 +1,127 @@
+<div class="qso-list-container">
+  <div class="header">
+    <h1>QSO Log</h1>
+    <button mat-raised-button color="primary" routerLink="/qso/new">
+      <mat-icon>add</mat-icon>
+      New QSO
+    </button>
+  </div>
+
+  <mat-card class="filters-card">
+    <mat-card-header>
+      <mat-card-title>Filters</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="filterForm" class="filters-form">
+        <mat-form-field appearance="outline">
+          <mat-label>Callsign</mat-label>
+          <input matInput formControlName="callsign" placeholder="Search callsign...">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Band</mat-label>
+          <mat-select formControlName="band">
+            <mat-option value="">All Bands</mat-option>
+            @for (band of bandOptions; track band) {
+              <mat-option [value]="band">{{ band }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>From Date</mat-label>
+          <input matInput [matDatepicker]="fromPicker" formControlName="from">
+          <mat-datepicker-toggle matIconSuffix [for]="fromPicker"></mat-datepicker-toggle>
+          <mat-datepicker #fromPicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>To Date</mat-label>
+          <input matInput [matDatepicker]="toPicker" formControlName="to">
+          <mat-datepicker-toggle matIconSuffix [for]="toPicker"></mat-datepicker-toggle>
+          <mat-datepicker #toPicker></mat-datepicker>
+        </mat-form-field>
+
+        <button mat-button (click)="clearFilters()">Clear Filters</button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="table-card">
+    <table mat-table [dataSource]="dataSource" class="qso-table">
+      <ng-container matColumnDef="theirCallsign">
+        <th mat-header-cell *matHeaderCellDef>Callsign</th>
+        <td mat-cell *matCellDef="let qso">{{ qso.theirCallsign }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="qsoDate">
+        <th mat-header-cell *matHeaderCellDef>Date</th>
+        <td mat-cell *matCellDef="let qso">{{ qso.qsoDate }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="timeOn">
+        <th mat-header-cell *matHeaderCellDef>Time</th>
+        <td mat-cell *matCellDef="let qso">{{ qso.timeOn }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="band">
+        <th mat-header-cell *matHeaderCellDef>Band</th>
+        <td mat-cell *matCellDef="let qso">{{ qso.band }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="mode">
+        <th mat-header-cell *matHeaderCellDef>Mode</th>
+        <td mat-cell *matCellDef="let qso">
+          {{ qso.mode }}
+          @if (qso.submode) {
+            <span class="submode">({{ qso.submode }})</span>
+          }
+          @if (qso.customMode) {
+            <span class="custom-mode">({{ qso.customMode }})</span>
+          }
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="rstSent">
+        <th mat-header-cell *matHeaderCellDef>RST Sent</th>
+        <td mat-cell *matCellDef="let qso">{{ qso.rstSent }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="rstRecv">
+        <th mat-header-cell *matHeaderCellDef>RST Recv</th>
+        <td mat-cell *matCellDef="let qso">{{ qso.rstRecv }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let qso">
+          <button mat-icon-button (click)="editQso(qso)" matTooltip="Edit">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button (click)="deleteQso(qso)" matTooltip="Delete" color="warn">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    @if (loading) {
+      <div class="loading">Loading...</div>
+    }
+
+    @if (!loading && dataSource.length === 0) {
+      <div class="no-data">No QSOs found. Start logging your contacts!</div>
+    }
+
+    <mat-paginator
+      [length]="totalRecords"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="[10, 20, 50, 100]"
+      (page)="onPageChange($event)"
+      showFirstLastButtons>
+    </mat-paginator>
+  </mat-card>
+</div>

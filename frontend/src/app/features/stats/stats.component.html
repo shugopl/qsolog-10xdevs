@@ -1,0 +1,113 @@
+<div class="stats-container">
+  <h1>Statistics</h1>
+
+  <mat-card class="filters-card">
+    <mat-card-header>
+      <mat-card-title>Date Range</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="filterForm" class="filters-form">
+        <mat-form-field appearance="outline">
+          <mat-label>From</mat-label>
+          <input matInput [matDatepicker]="fromPicker" formControlName="from">
+          <mat-datepicker-toggle matIconSuffix [for]="fromPicker"></mat-datepicker-toggle>
+          <mat-datepicker #fromPicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>To</mat-label>
+          <input matInput [matDatepicker]="toPicker" formControlName="to">
+          <mat-datepicker-toggle matIconSuffix [for]="toPicker"></mat-datepicker-toggle>
+          <mat-datepicker #toPicker></mat-datepicker>
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" (click)="loadStats()">Apply</button>
+        <button mat-button (click)="clearFilters()">Clear</button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  @if (loading) {
+    <div class="loading">Loading statistics...</div>
+  }
+
+  @if (stats && !loading) {
+    <div class="stats-grid">
+      <mat-card class="totals-card">
+        <mat-card-header>
+          <mat-card-title>Total Contacts</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="stat-number">{{ stats.totals.all }}</div>
+          <div class="stat-label">
+            {{ stats.totals.confirmed }} confirmed 
+            ({{ getPercentage(stats.totals.confirmed, stats.totals.all) }}%)
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>By Band</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="stats-list">
+            @for (band of stats.countsByBand; track band.band) {
+              <div class="stat-item">
+                <span class="stat-label">{{ band.band }}</span>
+                <span class="stat-value">
+                  {{ band.countAll }}
+                  @if (band.countConfirmed > 0) {
+                    <span class="confirmed">({{ band.countConfirmed }} confirmed)</span>
+                  }
+                </span>
+              </div>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>By Mode</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="stats-list">
+            @for (mode of stats.countsByMode; track mode.mode) {
+              <div class="stat-item">
+                <span class="stat-label">{{ mode.mode }}</span>
+                <span class="stat-value">
+                  {{ mode.countAll }}
+                  @if (mode.countConfirmed > 0) {
+                    <span class="confirmed">({{ mode.countConfirmed }} confirmed)</span>
+                  }
+                </span>
+              </div>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="daily-card">
+        <mat-card-header>
+          <mat-card-title>Daily Activity</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="stats-list">
+            @for (day of stats.countsByDay; track day.date) {
+              <div class="stat-item">
+                <span class="stat-label">{{ day.date }}</span>
+                <span class="stat-value">
+                  {{ day.countAll }}
+                  @if (day.countConfirmed > 0) {
+                    <span class="confirmed">({{ day.countConfirmed }} confirmed)</span>
+                  }
+                </span>
+              </div>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  }
+</div>

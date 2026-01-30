@@ -1,0 +1,94 @@
+<div class="ai-reports-container">
+  <h1>AI Reports</h1>
+
+  <mat-card class="generate-card">
+    <mat-card-header>
+      <mat-card-title>Generate New Report</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="generateForm" (ngSubmit)="generateReport()">
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>From Date</mat-label>
+            <input matInput [matDatepicker]="fromPicker" formControlName="from">
+            <mat-datepicker-toggle matIconSuffix [for]="fromPicker"></mat-datepicker-toggle>
+            <mat-datepicker #fromPicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>To Date</mat-label>
+            <input matInput [matDatepicker]="toPicker" formControlName="to">
+            <mat-datepicker-toggle matIconSuffix [for]="toPicker"></mat-datepicker-toggle>
+            <mat-datepicker #toPicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Language</mat-label>
+            <mat-select formControlName="language">
+              <mat-option value="EN">English</mat-option>
+              <mat-option value="PL">Polski</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <button mat-raised-button color="primary" type="submit" [disabled]="generating">
+            @if (generating) {
+              <mat-spinner diameter="20"></mat-spinner>
+            } @else {
+              Generate Report
+            }
+          </button>
+        </div>
+      </form>
+
+      @if (latestReport) {
+        <div class="latest-report">
+          <h3>Generated Report</h3>
+          <div class="report-content">{{ latestReport.content }}</div>
+          <div class="report-meta">
+            Generated: {{ latestReport.createdAt | date:'medium' }} | 
+            Language: {{ latestReport.language }}
+            @if (latestReport.dateFrom && latestReport.dateTo) {
+              | Period: {{ latestReport.dateFrom }} to {{ latestReport.dateTo }}
+            }
+          </div>
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="history-card">
+    <mat-card-header>
+      <mat-card-title>Report History</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      @if (loading) {
+        <div class="loading">Loading reports...</div>
+      }
+
+      @if (!loading && reports.length === 0) {
+        <div class="no-data">No reports generated yet.</div>
+      }
+
+      @if (!loading && reports.length > 0) {
+        <mat-accordion>
+          @for (report of reports; track report.id) {
+            <mat-expansion-panel>
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  Report from {{ report.createdAt | date:'short' }}
+                </mat-panel-title>
+                <mat-panel-description>
+                  {{ report.language }}
+                  @if (report.dateFrom && report.dateTo) {
+                    | {{ report.dateFrom }} to {{ report.dateTo }}
+                  }
+                </mat-panel-description>
+              </mat-expansion-panel-header>
+              <div class="report-content">{{ report.content }}</div>
+            </mat-expansion-panel>
+          }
+        </mat-accordion>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

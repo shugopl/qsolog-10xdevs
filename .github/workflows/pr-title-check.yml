@@ -1,0 +1,23 @@
+name: PR title convention
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+permissions:
+  pull-requests: read
+  contents: read
+
+jobs:
+  check-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR title
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+          echo "PR title: $TITLE"
+          # przykładowa konwencja: FEAT:, FIX:, CHORE:, DOCS:
+          if [[ ! "$TITLE" =~ ^(FEAT|FIX|CHORE|DOCS):\  ]]; then
+            echo "Invalid title. Use e.g. 'FEAT: ...' or 'FIX: ...'"
+            exit 1
+          fi

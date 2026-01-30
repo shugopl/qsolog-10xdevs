@@ -225,4 +225,53 @@ public interface QsoRepository extends R2dbcRepository<Qso, UUID> {
             @Param("from") LocalDate from,
             @Param("to") LocalDate to
     );
+
+    /**
+     * Find most recent QSO for a callsign (for suggestions).
+     */
+    @Query("""
+        SELECT * FROM qso
+        WHERE user_id = :userId
+        AND UPPER(their_callsign) = UPPER(:callsign)
+        ORDER BY qso_date DESC, time_on DESC
+        LIMIT 1
+        """)
+    Mono<Qso> findMostRecentByCallsign(
+            @Param("userId") UUID userId,
+            @Param("callsign") String callsign
+    );
+
+    /**
+     * Get most common band for a callsign (for suggestions).
+     */
+    @Query("""
+        SELECT band, COUNT(*) as count
+        FROM qso
+        WHERE user_id = :userId
+        AND UPPER(their_callsign) = UPPER(:callsign)
+        GROUP BY band
+        ORDER BY count DESC
+        LIMIT 1
+        """)
+    Mono<java.util.Map<String, Object>> getMostCommonBandForCallsign(
+            @Param("userId") UUID userId,
+            @Param("callsign") String callsign
+    );
+
+    /**
+     * Get most common mode for a callsign (for suggestions).
+     */
+    @Query("""
+        SELECT mode, COUNT(*) as count
+        FROM qso
+        WHERE user_id = :userId
+        AND UPPER(their_callsign) = UPPER(:callsign)
+        GROUP BY mode
+        ORDER BY count DESC
+        LIMIT 1
+        """)
+    Mono<java.util.Map<String, Object>> getMostCommonModeForCallsign(
+            @Param("userId") UUID userId,
+            @Param("callsign") String callsign
+    );
 }

@@ -1,0 +1,85 @@
+# github-actions.mdc — GitHub Actions rules for this monorepo
+
+## Goal
+This repository is a monorepo with:
+- Java backend (Maven) in `backend/`
+- Angular frontend (Node/npm) in `frontend/`
+
+Generate and maintain GitHub Actions workflows in `.github/workflows/` that:
+1) Run CI on pull requests and pushes to main
+2) Run only the relevant parts (backend/frontend) when only one area changes
+3) Use caching for Maven and npm
+4) Are simple, readable, and course-friendly (AI-assisted development showcase)
+
+## Repository layout (assumptions)
+- `backend/pom.xml`
+- `backend/mvnw` (Maven Wrapper) MUST be used instead of system `mvn`
+- `frontend/package.json`
+- `frontend/package-lock.json` (npm is used; not pnpm/yarn)
+
+## Standard commands
+### Backend
+- Build + tests: `./mvnw -B clean test`
+- Package (skip tests): `./mvnw -B -DskipTests package`
+
+### Frontend
+- Install: `npm ci`
+- Lint (optional): `npm run lint --if-present`
+- Test (optional): `npm test --if-present`
+- Build: `npm run build`
+
+## Required workflow versions / tooling
+- `actions/checkout@v4`
+- `actions/setup-java@v4` with:
+  - distribution: `temurin`
+  - java-version: `21` (can be changed centrally later)
+  - cache: `maven`
+- `actions/setup-node@v4` with:
+  - node-version: `20`
+  - cache: `npm`
+  - cache-dependency-path: `frontend/package-lock.json`
+
+## Monorepo change detection rule
+Use `dorny/paths-filter@v3` to detect changes and conditionally run jobs:
+- backend changes: `backend/**`
+- frontend changes: `frontend/**`
+- workflow changes: `.github/workflows/**` should trigger both
+
+Jobs should use:
+- `needs: changes`
+- `if: needs.changes.outputs.backend == 'true'` etc.
+
+## Workflows to generate (minimum set)
+1) `ci.yml`
+   - triggers: `pull_request` + `push` to `main`
+   - jobs:
+     - `changes` (paths filter)
+     - `backend` (build+test, package, upload artifact jar)
+     - `frontend` (install, lint optional, build, upload dist artifact)
+   - caching enabled
+   - set `permissions` minimally (read-only)
+
+2) `pr-title-check.yml`
+   - triggers: PR opened/edited/synchronize
+   - validates title matches: `^(FEAT|FIX|CHORE|DOCS):\ `
+   - minimal permissions
+
+3) `release.yml`
+   - triggers: tag push `v*`
+   - builds backend + frontend
+   - creates GitHub Release with artifacts:
+     - backend jar(s)
+     - tarball of frontend dist
+   - permissions: `contents: write`
+
+## Style and reliability requirements
+- Use `concurrency` in CI to cancel older runs on the same ref.
+- Use `defaults.run.working-directory` per job or explicit `working-directory` per step.
+- Avoid advanced, repo-specific tooling unless required (keep it course-friendly).
+- All YAML must be valid and minimal; avoid unnecessary matrices.
+
+## Output expectation for AI
+When asked to generate workflows:
+- Provide full file contents for each workflow in separate code blocks
+- Use the exact paths `.github/workflows/<name>.yml`
+- Keep comments short and practical

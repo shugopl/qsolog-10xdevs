@@ -1,0 +1,77 @@
+.stats-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.filters-card {
+  margin-bottom: 20px;
+}
+
+.filters-form {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.totals-card {
+  grid-column: 1 / -1;
+
+  .stat-number {
+    font-size: 48px;
+    font-weight: bold;
+    color: #3f51b5;
+    text-align: center;
+    margin: 20px 0;
+  }
+
+  .stat-label {
+    text-align: center;
+    display: block;
+    color: #666;
+  }
+}
+
+.stats-list {
+  .stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .stat-label {
+      font-weight: 500;
+    }
+
+    .confirmed {
+      color: #4caf50;
+      font-size: 0.9em;
+      margin-left: 8px;
+    }
+  }
+}
+
+.daily-card {
+  grid-column: 1 / -1;
+
+  .stats-list {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+}

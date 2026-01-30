@@ -1,0 +1,54 @@
+.qso-list-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.filters-card {
+  margin-bottom: 20px;
+}
+
+.filters-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  align-items: flex-start;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.table-card {
+  overflow-x: auto;
+}
+
+.qso-table {
+  width: 100%;
+
+  .submode, .custom-mode {
+    font-size: 0.9em;
+    color: #666;
+    margin-left: 4px;
+  }
+}
+
+.loading, .no-data {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+mat-paginator {
+  border-top: 1px solid #e0e0e0;
+}

@@ -1,0 +1,61 @@
+.ai-reports-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.generate-card {
+  margin-bottom: 20px;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+
+  mat-form-field {
+    flex: 1;
+    min-width: 200px;
+  }
+}
+
+.latest-report {
+  margin-top: 24px;
+  padding: 16px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+
+  h3 {
+    margin-top: 0;
+  }
+
+  .report-content {
+    background-color: white;
+    padding: 16px;
+    border-radius: 4px;
+    white-space: pre-wrap;
+    margin-bottom: 12px;
+  }
+
+  .report-meta {
+    font-size: 0.9em;
+    color: #666;
+  }
+}
+
+.history-card {
+  .report-content {
+    white-space: pre-wrap;
+    padding: 16px 0;
+  }
+}
+
+.loading, .no-data {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+mat-spinner {
+  margin: 0 auto;
+}
