@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Uses Testcontainers to spin up a PostgreSQL database.
  */
 @SpringBootTest(classes = QsoLogApplication.class)
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 class DatabaseMigrationTest {
 
     @Container

@@ -33,7 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @AutoConfigureWebTestClient
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 class ExportControllerTest {
 
     @Container

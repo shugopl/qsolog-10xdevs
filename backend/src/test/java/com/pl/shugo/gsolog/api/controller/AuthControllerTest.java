@@ -23,7 +23,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @AutoConfigureWebTestClient
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 class AuthControllerTest {
 
     @Container
