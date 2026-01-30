@@ -2,9 +2,8 @@ package com.pl.shugo.gsolog.api.controller;
 
 import com.pl.shugo.gsolog.api.dto.CallsignSuggestionResponse;
 import com.pl.shugo.gsolog.application.service.SuggestionsService;
-import com.pl.shugo.gsolog.infrastructure.security.AuthenticatedUserIdResolver;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,27 +22,24 @@ import java.util.UUID;
 public class SuggestionsController {
 
     private final SuggestionsService suggestionsService;
-    private final AuthenticatedUserIdResolver userIdResolver;
 
-    public SuggestionsController(SuggestionsService suggestionsService, AuthenticatedUserIdResolver userIdResolver) {
+    public SuggestionsController(SuggestionsService suggestionsService) {
         this.suggestionsService = suggestionsService;
-        this.userIdResolver = userIdResolver;
     }
 
     /**
      * Get suggestions for a callsign based on user's QSO history.
      * Returns information from past QSOs: name, QTH, notes, common band/mode.
      *
-     * @param callsign       Callsign to get suggestions for
-     * @param authentication JWT authentication
+     * @param userId   User ID from JWT token principal
+     * @param callsign Callsign to get suggestions for
      * @return Suggestion response if history found, empty otherwise
      */
     @GetMapping("/callsign/{callsign}")
     public Mono<CallsignSuggestionResponse> getCallsignSuggestions(
-            @PathVariable String callsign,
-            Authentication authentication) {
+            @AuthenticationPrincipal UUID userId,
+            @PathVariable String callsign) {
 
-        UUID userId = userIdResolver.resolve(authentication);
         return suggestionsService.getSuggestions(userId, callsign)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.NOT_FOUND,

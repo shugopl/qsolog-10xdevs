@@ -59,9 +59,6 @@ public class SecurityConfig {
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         AuthenticationWebFilter authenticationWebFilter = new AuthenticationWebFilter(jwtAuthenticationManager);
         authenticationWebFilter.setServerAuthenticationConverter(jwtAuthenticationConverter);
-        authenticationWebFilter.setRequiresAuthenticationMatcher(
-                org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers.pathMatchers("/**")
-        );
 
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
@@ -69,7 +66,6 @@ public class SecurityConfig {
                         .authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED))
                         .accessDeniedHandler(new HttpStatusServerAccessDeniedHandler(HttpStatus.FORBIDDEN))
                 )
-                .securityContextRepository(org.springframework.security.web.server.context.NoOpServerSecurityContextRepository.getInstance())
                 .authorizeExchange(exchanges -> exchanges
                         // Always allow CORS preflight
                         .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()

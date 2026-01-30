@@ -4,8 +4,7 @@ import com.pl.shugo.gsolog.api.dto.AiReportResponse;
 import com.pl.shugo.gsolog.api.dto.AiTextResponse;
 import com.pl.shugo.gsolog.api.dto.QsoDescriptionRequest;
 import com.pl.shugo.gsolog.application.service.AiService;
-import com.pl.shugo.gsolog.infrastructure.security.AuthenticatedUserIdResolver;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -22,11 +21,9 @@ import java.util.UUID;
 public class AiController {
 
     private final AiService aiService;
-    private final AuthenticatedUserIdResolver userIdResolver;
 
-    public AiController(AiService aiService, AuthenticatedUserIdResolver userIdResolver) {
+    public AiController(AiService aiService) {
         this.aiService = aiService;
-        this.userIdResolver = userIdResolver;
     }
 
     /**
@@ -46,20 +43,19 @@ public class AiController {
      * Computes stats and generates narrative text.
      * Saves report to history table.
      *
-     * @param from           Start date (optional)
-     * @param to             End date (optional)
-     * @param lang           Language ("PL" or "EN")
-     * @param authentication JWT authentication
+     * @param userId User ID from JWT token principal
+     * @param from   Start date (optional)
+     * @param to     End date (optional)
+     * @param lang   Language ("PL" or "EN")
      * @return AI-generated report
      */
     @PostMapping("/period-report")
     public Mono<AiReportResponse> generatePeriodReport(
+            @AuthenticationPrincipal UUID userId,
             @RequestParam(required = false) LocalDate from,
             @RequestParam(required = false) LocalDate to,
-            @RequestParam(defaultValue = "EN") String lang,
-            Authentication authentication) {
+            @RequestParam(defaultValue = "EN") String lang) {
 
-        var userId = userIdResolver.resolve(authentication);
         return aiService.generatePeriodReport(userId, from, to, lang);
     }
 
@@ -67,34 +63,32 @@ public class AiController {
      * Get list of AI-generated reports.
      * Optionally filtered by date range.
      *
-     * @param from           Start date filter (optional)
-     * @param to             End date filter (optional)
-     * @param authentication JWT authentication
+     * @param userId User ID from JWT token principal
+     * @param from   Start date filter (optional)
+     * @param to     End date filter (optional)
      * @return List of reports
      */
     @GetMapping("/reports")
     public Flux<AiReportResponse> getReports(
+            @AuthenticationPrincipal UUID userId,
             @RequestParam(required = false) LocalDate from,
-            @RequestParam(required = false) LocalDate to,
-            Authentication authentication) {
+            @RequestParam(required = false) LocalDate to) {
 
-        var userId = userIdResolver.resolve(authentication);
         return aiService.getReports(userId, from, to);
     }
 
     /**
      * Get a specific AI report by ID.
      *
-     * @param id             Report ID
-     * @param authentication JWT authentication
+     * @param userId User ID from JWT token principal
+     * @param id     Report ID
      * @return Report if found and owned by user
      */
     @GetMapping("/reports/{id}")
     public Mono<AiReportResponse> getReport(
-            @PathVariable UUID id,
-            Authentication authentication) {
+            @AuthenticationPrincipal UUID userId,
+            @PathVariable UUID id) {
 
-        var userId = userIdResolver.resolve(authentication);
         return aiService.getReport(userId, id);
     }
 }
