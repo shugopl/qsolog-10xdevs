@@ -4,10 +4,11 @@ Production-quality ham radio contact (QSO) logging application built as a monore
 
 ## Tech Stack
 
-- **Backend**: Java 25 + Spring Boot 4 WebFlux + R2DBC (reactive) + PostgreSQL
+- **Backend**: Java 25 + Spring Boot 3.4.1 WebFlux + R2DBC (reactive) + PostgreSQL 16
 - **Frontend**: Angular 21 SPA + Angular Material
-- **Auth**: JWT bearer tokens with secure password hashing
-- **Architecture**: Clean Architecture with SOLID principles, reactive throughout
+- **Auth**: JWT bearer tokens with BCrypt password hashing
+- **Architecture**: Clean Architecture with SOLID principles, fully reactive stack
+- **CI/CD**: GitHub Actions with automated testing and Java version enforcement
 
 ## Repository Structure
 
@@ -24,7 +25,13 @@ Production-quality ham radio contact (QSO) logging application built as a monore
 
 ## Status
 
-Currently under development. Implementation follows incremental steps in `/iteration/*.md` files.
+✅ **Backend Core Features**: Complete (authentication, QSO CRUD, statistics, export, AI helper)
+🚧 **Frontend**: Angular scaffolding complete, features in progress
+✅ **CI/CD**: GitHub Actions with Java 25 enforcement and automated testing
+
+Implementation follows incremental steps in `/iteration/*.md` files.
+
+> **Recent Update**: Fixed CI test failures by adding explicit `@DateTimeFormat` annotations to LocalDate parameters. See [CI Fix Summary](iteration/CI_FIX_SUMMARY.md) for details.
 
 ## Key Features (Planned)
 
@@ -75,39 +82,59 @@ docker-compose down -v
 
 ### Backend
 
-Prerequisites:
-- Java 21 or later
-- Maven 3.9+
-- PostgreSQL (via docker-compose or local installation)
+**Prerequisites:**
+- **Java 25** (enforced by Maven enforcer plugin - builds will fail on lower versions)
+- Maven 3.8.0 or later
+- PostgreSQL 16 (via docker-compose or local installation)
 - Docker (required for Testcontainers integration tests)
 
-Build and run:
+**Quick Setup:**
+```bash
+# Verify Java 25 is installed
+java -version
+# Should show: openjdk version "25.0.1" or similar
+
+# If Java 25 not installed, use SDKMAN:
+curl -s "https://get.sdkman.io" | bash
+sdk install java 25.0.1-amzn
+sdk use java 25.0.1-amzn
+```
+
+**Build and run:**
 ```bash
 cd backend
+
+# Verify Java 25 is being used (enforcer plugin will check)
+mvn -version
 
 # Run all tests (requires Docker for Testcontainers)
 mvn test
 
 # Run tests excluding integration tests (no Docker required)
-mvn test -Dtest='!DatabaseMigrationTest'
+mvn test -Dtest='!DatabaseMigrationTest,!*ControllerTest'
 
 # Run application (requires PostgreSQL running)
 mvn spring-boot:run
+
+# With Flyway migrations enabled
+mvn spring-boot:run -Dspring-boot.run.arguments="--spring.flyway.enabled=true"
 
 # Or build and run JAR
 mvn clean package
 java -jar target/qsolog-backend-0.0.1-SNAPSHOT.jar
 ```
 
-The backend will start on `http://localhost:8080`.
+The backend will start on `http://localhost:8081` (configurable via `SERVER_PORT` env var).
+
+> **Note**: Build will fail if Java version is not 25 due to Maven enforcer plugin. This ensures consistent behavior across development and CI environments.
 
 **Available endpoints:**
 
 Public (no authentication required):
-- **Health check**: `GET http://localhost:8080/actuator/health`
-- **Ping**: `GET http://localhost:8080/api/v1/ping` (returns `{"status":"ok"}`)
-- **OpenAPI UI**: `http://localhost:8080/swagger-ui.html`
-- **API Docs**: `http://localhost:8080/api-docs`
+- **Health check**: `GET http://localhost:8081/actuator/health`
+- **Ping**: `GET http://localhost:8081/api/v1/ping` (returns `{"status":"ok"}`)
+- **OpenAPI UI**: `http://localhost:8081/swagger-ui.html`
+- **API Docs**: `http://localhost:8081/api-docs`
 
 Authentication:
 - **Register**: `POST /api/v1/auth/register` - Register new user (role: OPERATOR)
@@ -158,14 +185,14 @@ Flyway migrations are in `src/main/resources/db/migration/`.
 
 1. **Register a new user:**
 ```bash
-curl -X POST http://localhost:8080/api/v1/auth/register \
+curl -X POST http://localhost:8081/api/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{"email":"user@example.com","username":"myuser","password":"mypassword123"}'
 ```
 
 2. **Login and get JWT token:**
 ```bash
-curl -X POST http://localhost:8080/api/v1/auth/login \
+curl -X POST http://localhost:8081/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"usernameOrEmail":"myuser","password":"mypassword123"}'
 ```
@@ -181,7 +208,7 @@ Response:
 
 3. **Access protected endpoints with JWT:**
 ```bash
-curl -X GET http://localhost:8080/api/v1/auth/me \
+curl -X GET http://localhost:8081/api/v1/auth/me \
   -H "Authorization: Bearer eyJhbGc..."
 ```
 
@@ -336,11 +363,181 @@ Before deploying to production:
    - [ ] Build with `npm run build -- --configuration production`
    - [ ] Verify CSP and security headers in nginx configuration
 
+## Testing
+
+### Backend Tests
+
+**Run all tests** (requires Docker for Testcontainers):
+```bash
+cd backend
+mvn test
+```
+
+**Run without Testcontainers** (skips integration tests):
+```bash
+mvn test -Dtest='!DatabaseMigrationTest,!AuthControllerTest,!AdminControllerTest,!QsoControllerTest,!StatsControllerTest,!ExportControllerTest,!LookupControllerTest,!AiControllerTest,!SuggestionsControllerTest'
+```
+
+**Run specific test class:**
+```bash
+mvn test -Dtest=SecurityTest
+```
+
+**Mimic CI environment** (for troubleshooting):
+```bash
+TZ=UTC LANG=C mvn -B -ntp test
+```
+
+**Test coverage:**
+- Unit tests: Service layer and security utilities
+- Integration tests: Full controller tests with real PostgreSQL (Testcontainers)
+- Total: 71 tests across authentication, QSO management, statistics, export, AI, and suggestions
+
+### Frontend Tests
+
+```bash
+cd frontend
+
+# Run unit tests (requires Chrome/Chromium)
+npm test
+
+# Run linting
+npm run lint
+```
+
+### CI/CD
+
+GitHub Actions automatically runs tests on:
+- Push to `main` or `develop` branches
+- Pull requests
+
+**Workflows:**
+- `.github/workflows/backend-ci.yml` - Backend build and test (Java 25)
+- `.github/workflows/ci.yaml` - Monorepo-wide CI with path filtering
+- `.github/workflows/frontend-ci.yml` - Frontend build and lint
+
+All workflows enforce Java 25 and include diagnostic output for troubleshooting.
+
+## Troubleshooting
+
+### Common Issues
+
+**1. Tests fail with "Docker environment not found" or Testcontainers errors**
+
+Known compatibility issue between Testcontainers 1.20.4 and Docker Desktop 29.x.
+
+**Solutions:**
+- Skip Testcontainers tests (see Testing section above)
+- Downgrade to Docker Desktop 28.x
+- Set `export TESTCONTAINERS_RYUK_DISABLED=true`
+
+**2. Application fails to start with Flyway connection error**
+
+PostgreSQL is not running or Flyway is enabled without database.
+
+**Solutions:**
+```bash
+# Start PostgreSQL
+cd docker && docker-compose up -d
+
+# Or disable Flyway
+export FLYWAY_ENABLED=false
+mvn spring-boot:run
+```
+
+**3. 401 Unauthorized on protected endpoints**
+
+Missing or invalid JWT token.
+
+**Solutions:**
+- Obtain token via `POST /api/v1/auth/login`
+- Include header: `Authorization: Bearer <token>`
+- Check token expiration (24 hours from issuance)
+
+**4. 403 Forbidden on admin endpoints**
+
+User role is OPERATOR but endpoint requires ADMIN.
+
+**Solutions:**
+- Create admin user via `ADMIN_BOOTSTRAP` environment variables
+- Regular registration always creates OPERATOR users
+
+**5. Build fails with "Java 25 is required"**
+
+Maven enforcer plugin detected Java version < 25.
+
+**Solutions:**
+```bash
+# Check current version
+java -version
+
+# Install Java 25 via SDKMAN
+sdk install java 25.0.1-amzn
+sdk use java 25.0.1-amzn
+
+# Verify
+mvn -version
+```
+
+**6. CI tests fail with 400 BAD_REQUEST (RESOLVED)**
+
+This issue was caused by missing `@DateTimeFormat` annotations on LocalDate parameters.
+
+**Fix**: Added explicit `@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)` to all controllers. See [CI_FIX_SUMMARY.md](iteration/CI_FIX_SUMMARY.md) for full details.
+
 ## API Documentation
 
 Once the backend is running, visit:
-- **Swagger UI**: http://localhost:8080/swagger-ui.html
-- **OpenAPI JSON**: http://localhost:8080/api-docs
+- **Swagger UI**: http://localhost:8081/swagger-ui.html
+- **OpenAPI JSON**: http://localhost:8081/api-docs
+
+## Contributing
+
+1. Follow the implementation plan in `/iteration/*.md`
+2. Adhere to guidelines in `CLAUDE.md`
+3. Ensure all tests pass before committing
+4. Use conventional commits for clear history
+5. Java 25 is required - no exceptions
+
+## Project Structure
+
+```
+/
+├── backend/                    # Spring Boot WebFlux backend
+│   ├── src/main/java/
+│   │   └── com/pl/shugo/gsolog/
+│   │       ├── api/           # Controllers and DTOs
+│   │       ├── application/   # Services (use cases)
+│   │       ├── domain/        # Entities and repositories
+│   │       └── infrastructure/# Security, config, adapters
+│   ├── src/main/resources/
+│   │   ├── db/migration/      # Flyway SQL migrations
+│   │   └── application.yaml   # Configuration
+│   └── pom.xml                # Maven dependencies
+│
+├── frontend/                   # Angular 21 SPA
+│   ├── src/app/
+│   │   ├── core/              # Services, guards, interceptors
+│   │   ├── shared/            # Shared components, pipes
+│   │   └── features/          # Feature modules
+│   └── package.json
+│
+├── docker/                     # Local development
+│   └── docker-compose.yml     # PostgreSQL + pgAdmin
+│
+├── .github/workflows/          # CI/CD pipelines
+│   ├── backend-ci.yml         # Backend tests (Java 25)
+│   ├── ci.yaml                # Monorepo CI
+│   └── frontend-ci.yml        # Frontend build
+│
+├── iteration/                  # Implementation plan
+│   ├── step-*.md              # Step-by-step guides
+│   └── CI_FIX_SUMMARY.md      # Recent CI fix documentation
+│
+├── CLAUDE.md                   # Development guidelines
+├── README.md                   # This file
+└── docker-compose.yml          # Full stack deployment
+```
 
 ## License
 

@@ -4,6 +4,7 @@ import com.pl.shugo.gsolog.api.dto.AiReportResponse;
 import com.pl.shugo.gsolog.api.dto.AiTextResponse;
 import com.pl.shugo.gsolog.api.dto.QsoDescriptionRequest;
 import com.pl.shugo.gsolog.application.service.AiService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -52,8 +53,8 @@ public class AiController {
     @PostMapping("/period-report")
     public Mono<AiReportResponse> generatePeriodReport(
             @AuthenticationPrincipal UUID userId,
-            @RequestParam(required = false) LocalDate from,
-            @RequestParam(required = false) LocalDate to,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @RequestParam(defaultValue = "EN") String lang) {
 
         return aiService.generatePeriodReport(userId, from, to, lang);
@@ -71,8 +72,8 @@ public class AiController {
     @GetMapping("/reports")
     public Flux<AiReportResponse> getReports(
             @AuthenticationPrincipal UUID userId,
-            @RequestParam(required = false) LocalDate from,
-            @RequestParam(required = false) LocalDate to) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
 
         return aiService.getReports(userId, from, to);
     }

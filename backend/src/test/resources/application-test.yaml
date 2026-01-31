@@ -1,0 +1,23 @@
+# Test-specific configuration
+# Enables DEBUG logging for request/response troubleshooting
+
+spring:
+  # Use H2 in-memory database for tests (unless overridden by @Testcontainers)
+  r2dbc:
+    url: r2dbc:h2:mem:///testdb;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+
+  flyway:
+    enabled: false
+
+# Enhanced logging for test troubleshooting
+logging:
+  level:
+    root: INFO
+    com.pl.shugo.gsolog: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.web.reactive.function.client: DEBUG
+    org.springframework.validation: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.test.web.reactive.server: DEBUG

@@ -5,27 +5,37 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 Production-quality ham radio QSO (contact) logging application built as a monorepo:
-- **Backend**: Java 21 (targeting Java 25) + Spring Boot 3.4 WebFlux + R2DBC (reactive) + PostgreSQL 16
+- **Backend**: Java 21 (targeting Java 25) + Spring Boot 3.4.1 WebFlux + R2DBC (reactive) + PostgreSQL 16
 - **Frontend**: Angular 21 SPA + Angular Material (not yet implemented)
 - **Auth**: JWT bearer tokens with BCrypt password hashing
 - **Architecture**: Clean Architecture with SOLID principles, fully reactive stack
 
+**Key Dependencies:**
+- Spring Boot 3.4.1 (WebFlux, Security, Data R2DBC, Actuator)
+- R2DBC PostgreSQL driver (reactive database access)
+- Flyway 10.x (database migrations via JDBC)
+- SpringDoc OpenAPI 2.7.0 (API documentation)
+- Testcontainers 1.20.4 (integration tests with real PostgreSQL)
+- JUnit 5 (testing framework)
+
 ## Implementation Status
 
-**Completed (Steps 1-3):**
+**Completed:**
 - ✓ Backend foundation with Spring Boot WebFlux
 - ✓ PostgreSQL schema via Flyway migrations
 - ✓ JWT authentication and authorization system
-- ✓ User management (register, login, roles)
-- ✓ Domain entities and enums
+- ✓ User management (register, login, roles, admin endpoints)
+- ✓ Domain entities and enums (Band, AdifMode, AdifSubmode, QSL statuses)
+- ✓ QSO CRUD operations with multi-tenancy
+- ✓ Statistics endpoints (band, mode, QSL stats)
+- ✓ ADIF/CSV export functionality
+- ✓ Callsign lookup integration (HamQTH API)
+- ✓ AI-powered QSO descriptions and period reports
+- ✓ Suggestions from user history
 
 **Not Yet Implemented:**
-- QSO CRUD operations (Step 4)
-- Filtering, pagination, suggestions (Step 5)
-- ADIF/CSV export (Step 6)
-- Stats and AI helper (Step 7)
-- Frontend application (Steps 8-10)
-- Docker containerization and CI/CD (Step 11)
+- Frontend application (Angular 21 SPA)
+- Full CI/CD pipeline
 
 ## Commands
 
@@ -131,10 +141,11 @@ com.pl.shugo.gsolog/
 - `QslStatus`: NONE, SENT, CONFIRMED
 - `LotwStatus`, `EqslStatus`: UNKNOWN, SENT, CONFIRMED
 
-**Mode/Submode Validation Rules** (to be enforced in QSO validation):
+**Mode/Submode Validation Rules** (enforced at service layer):
 - If `submode` ∈ {FT8, FT4, JS8} → `mode` must be MFSK
 - If `submode` ∈ {PSK31, PSK63, PSK125} → `mode` must be PSK
 - If `custom_mode` not null → `mode` must be DATA and `submode` must be null
+- Validation failures return 400 Bad Request with descriptive error messages
 
 ### Security Architecture
 
@@ -180,20 +191,48 @@ public interface UserRepository extends R2dbcRepository<User, UUID> {
 - Prevent users from accessing other users' data
 - Enforced at service layer, not just controller layer
 
-## API Endpoints (Implemented)
+## API Endpoints
 
-**Authentication** (`/api/v1/auth`):
-- `POST /register` - Register new user (default role: OPERATOR)
-- `POST /login` - Login with username/email and password, returns JWT
-- `GET /me` - Get current authenticated user info
-
-**Utility**:
+**Public Endpoints:**
 - `GET /api/v1/ping` - Health check, returns `{"status":"ok"}`
 - `GET /actuator/health` - Spring Boot health endpoint
-
-**Documentation**:
 - `GET /swagger-ui.html` - OpenAPI/Swagger UI
 - `GET /api-docs` - OpenAPI JSON specification
+
+**Authentication** (`/api/v1/auth` - public):
+- `POST /register` - Register new user (default role: OPERATOR)
+- `POST /login` - Login with username/email and password, returns JWT
+- `GET /me` - Get current authenticated user info (requires JWT)
+
+**Admin** (`/api/v1/admin` - ADMIN role required):
+- `GET /users` - List all users
+
+**QSO Management** (`/api/v1/qso` - authenticated):
+- `POST /` - Create new QSO entry
+- `GET /` - List user's QSO entries with pagination and filtering
+- `GET /{id}` - Get specific QSO entry
+- `PUT /{id}` - Update QSO entry
+- `DELETE /{id}` - Delete QSO entry
+
+**Statistics** (`/api/v1/stats` - authenticated):
+- `GET /summary` - Overall statistics summary
+- `GET /by-band` - QSO counts grouped by band
+- `GET /by-mode` - QSO counts grouped by mode
+- `GET /qsl-status` - QSL confirmation statistics
+
+**Export** (`/api/v1/export` - authenticated):
+- `GET /adif` - Export QSO log as ADIF format
+- `GET /csv` - Export QSO log as CSV format
+
+**Lookup** (`/api/v1/lookup` - authenticated):
+- `GET /callsign/{callsign}` - Lookup callsign via HamQTH API
+
+**Suggestions** (`/api/v1/suggestions` - authenticated):
+- `GET /for-callsign/{callsign}` - Get suggestions from user's history
+
+**AI Helper** (`/api/v1/ai` - authenticated):
+- `POST /describe-qso` - Generate AI description for QSO entry
+- `POST /generate-report` - Generate AI period report
 
 ## Testing Strategy
 
@@ -211,8 +250,11 @@ public interface UserRepository extends R2dbcRepository<User, UUID> {
 # All tests (requires Docker)
 mvn test
 
-# Skip Testcontainers tests
-mvn test -Dtest='!DatabaseMigrationTest,!AuthControllerTest'
+# Skip Testcontainers tests (no Docker required)
+mvn test -Dtest='!DatabaseMigrationTest,!AuthControllerTest,!AdminControllerTest,!QsoControllerTest,!StatsControllerTest,!ExportControllerTest,!LookupControllerTest,!AiControllerTest,!SuggestionsControllerTest'
+
+# Run only unit tests (quick)
+mvn test -Dtest=SecurityTest,PingControllerTest
 
 # Specific test class
 mvn test -Dtest=SecurityTest
@@ -236,6 +278,11 @@ mvn test -Dtest=SecurityTest#ping_shouldBeAccessibleWithoutAuthentication
 - `ADMIN_EMAIL` - Admin email (required if ADMIN_BOOTSTRAP=true)
 - `ADMIN_USERNAME` - Admin username (required if ADMIN_BOOTSTRAP=true)
 - `ADMIN_PASSWORD` - Admin password (required if ADMIN_BOOTSTRAP=true)
+
+**External APIs (optional):**
+- `HAMQTH_USERNAME` - HamQTH.com username for callsign lookup
+- `HAMQTH_PASSWORD` - HamQTH.com password
+- `OPENAI_API_KEY` - OpenAI API key for AI features (falls back to mock adapter if not set)
 
 **Server:**
 - `SERVER_PORT` - HTTP port (default: 8080)
@@ -321,9 +368,9 @@ mvn test -Dtest=SecurityTest#ping_shouldBeAccessibleWithoutAuthentication
    - Throw `ResponseStatusException` with appropriate HTTP status and message
    - Validation errors automatically formatted with field-level details
 
-## ADIF Export Mapping (For Future Implementation)
+## ADIF Export Mapping
 
-When implementing ADIF export (Step 6), use this mapping:
+The ADIF export functionality uses this mapping:
 
 | UI Label | mode | submode | custom_mode | ADIF Output |
 |----------|------|---------|-------------|-------------|
@@ -337,19 +384,34 @@ Vendor field format: `<APP_QSOLOG_CUSTOMMODE:{len}>{value}`
 
 ## Common Issues
 
-**Tests fail with "Could not find valid Docker environment":**
-- Testcontainers tests require Docker daemon running
-- Either start Docker Desktop or run: `mvn test -Dtest='!DatabaseMigrationTest,!AuthControllerTest'`
+**Tests fail with "Could not find valid Docker environment" or "BadRequestException (Status 400)":**
+- Known compatibility issue between Testcontainers and Docker Desktop 29.x
+- **Workaround 1**: Skip Testcontainers tests:
+  ```bash
+  mvn test -Dtest='!DatabaseMigrationTest,!AuthControllerTest,!AdminControllerTest,!QsoControllerTest,!StatsControllerTest,!ExportControllerTest,!LookupControllerTest,!AiControllerTest,!SuggestionsControllerTest'
+  ```
+- **Workaround 2**: Try setting environment variable:
+  ```bash
+  export TESTCONTAINERS_RYUK_DISABLED=true
+  ```
+- **Workaround 3**: Downgrade to Docker Desktop 28.x or earlier
+- **Workaround 4**: Wait for Testcontainers or Docker Desktop update that fixes compatibility
 
 **Application fails to start with Flyway connection error:**
 - PostgreSQL not running or Flyway enabled without database
 - Start database: `cd docker && docker-compose up -d`
-- Or disable Flyway: set `FLYWAY_ENABLED=false`
+- Or disable Flyway: set `FLYWAY_ENABLED=false` or omit from environment
 
-**401 Unauthorized on /api/v1/auth/me:**
+**401 Unauthorized on protected endpoints:**
 - Missing or invalid JWT token in Authorization header
-- Token expired (24 hour expiration)
+- Token expired (24 hour expiration from issuance)
 - Use `Authorization: Bearer <token>` header format
+- Obtain token via `POST /api/v1/auth/login`
+
+**403 Forbidden on admin endpoints:**
+- User role is OPERATOR but endpoint requires ADMIN
+- Admin users must be created via ADMIN_BOOTSTRAP or database seed
+- Regular registration always creates OPERATOR users
 
 **Package name mismatch:**
 - Code uses `com.pl.shugo.gsolog` (actual implementation)

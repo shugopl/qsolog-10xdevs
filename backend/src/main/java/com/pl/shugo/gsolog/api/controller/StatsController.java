@@ -2,6 +2,7 @@ package com.pl.shugo.gsolog.api.controller;
 
 import com.pl.shugo.gsolog.api.dto.StatsResponse;
 import com.pl.shugo.gsolog.application.service.StatsService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,8 +39,8 @@ public class StatsController {
     @GetMapping("/summary")
     public Mono<StatsResponse> getStatsSummary(
             @AuthenticationPrincipal UUID userId,
-            @RequestParam(required = false) LocalDate from,
-            @RequestParam(required = false) LocalDate to) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
 
         return statsService.getStatsSummary(userId, from, to);
     }

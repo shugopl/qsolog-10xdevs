@@ -5,6 +5,7 @@ import com.pl.shugo.gsolog.infrastructure.security.AuthenticatedUserIdResolver;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -49,8 +50,8 @@ public class ExportController {
      */
     @GetMapping(value = "/adif", produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<Flux<DataBuffer>> exportAdif(
-            @RequestParam(required = false) LocalDate from,
-            @RequestParam(required = false) LocalDate to,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             Authentication authentication) {
 
         var userId = userIdResolver.resolve(authentication);
@@ -76,8 +77,8 @@ public class ExportController {
      */
     @GetMapping(value = "/csv", produces = "text/csv")
     public ResponseEntity<Flux<DataBuffer>> exportCsv(
-            @RequestParam(required = false) LocalDate from,
-            @RequestParam(required = false) LocalDate to,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             Authentication authentication) {
 
         var userId = userIdResolver.resolve(authentication);

@@ -7,6 +7,7 @@ import com.pl.shugo.gsolog.api.dto.UpdateQsoRequest;
 import com.pl.shugo.gsolog.application.service.QsoService;
 import com.pl.shugo.gsolog.infrastructure.security.AuthenticatedUserIdResolver;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -76,8 +77,8 @@ public class QsoController {
     public Flux<QsoResponse> getAllQsos(
             @RequestParam(required = false) String callsign,
             @RequestParam(required = false) String band,
-            @RequestParam(required = false) LocalDate from,
-            @RequestParam(required = false) LocalDate to,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             Authentication authentication) {
